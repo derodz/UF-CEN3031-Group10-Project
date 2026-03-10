@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            Affordable Housing Finder
+        </title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+
+<body>
+    <header>
+        <h1>🏠 Affordable Housing Finder</h1>
+    </header>
+
+    <main>
+        <aside class="sidebar">
+            <h2>Search</h2>
+            <input type="text" id="zipcode" placeholder="Enter ZIP Code" maxlength="5">
+            <button> Search </button>
+            <h3>Filters</h3>
+            <select>
+                <option>Any Income</option>
+                <option>Under $50k</option>
+                <option>$50k - $100k</option>
+                <option>$100k+</option>
+            </select>
+            <select>
+                <option>Any Price</option>
+                <option>Under $200k</option>
+                <option>$200k - $400k</option>
+                <option>$400k+</option>
+            </select>
+            <select>
+                <option>Any Risk Level</option>
+                <option>Low Risk</option>
+                <option>Medium Risk</option>
+                <option>High Risk</option>
+            </select>
+            <select>
+                <option>Any Property Type</option>
+                <option>Single Family</option>
+                <option>Condo</option>
+                <option>Townhouse</option>
+                <option>Multi-Family</option>
+            </select>
+            <select>
+                <option>Any Bedrooms</option>
+                <option>1+</option>
+                <option>2+</option>
+                <option>3+</option>
+                <option>4+</option>
+            </select>
+        </aside>
+        <section class ="map">
+            <p>🗺️ Map Area</p>
+            <div class="legend">
+                <span>🟢 Affordable</span>
+                <span>🟡 Moderate</span>
+                <span>🔴 Expensive</span>
+            </div>
+        </section>
+    </main>
+
+    <footer class="results">
+        <div class="stat">
+            <span>Avg Income</span>
+            <strong>$45k</strong>
+        </div>
+        <div class="stat">
+            <span>Avg Home</span>
+            <strong>$280k</strong>
+        </div>
+        <div class="stat">
+            <span>Score</span>
+            <strong>72/100</strong>
+        </div>
+    </footer>
+</body>
+
+</html>
+
