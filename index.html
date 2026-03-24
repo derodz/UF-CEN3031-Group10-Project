@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en">    
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>
-            Affordable Housing Finder
-        </title>
+        <title> Affordable Housing Finder</title>
         <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     </head>
 
 <body>
@@ -18,34 +17,35 @@
         <aside class="sidebar">
             <h2>Search</h2>
             <input type="text" id="zipcode" placeholder="Enter ZIP Code" maxlength="5">
-            <button> Search </button>
+            <input type="text" id="state" placeholder="Enter State (e.g. NY)" maxlength="2">
+            <button id="searchBtn">Search</button>
             <h3>Filters</h3>
-            <select>
+            <select id="income">
                 <option>Any Income</option>
                 <option>Under $50k</option>
                 <option>$50k - $100k</option>
                 <option>$100k+</option>
             </select>
-            <select>
+            <select id="price">
                 <option>Any Price</option>
                 <option>Under $200k</option>
                 <option>$200k - $400k</option>
                 <option>$400k+</option>
             </select>
-            <select>
+            <select id="risk">
                 <option>Any Risk Level</option>
                 <option>Low Risk</option>
                 <option>Medium Risk</option>
                 <option>High Risk</option>
             </select>
-            <select>
+            <select id="propertyType">
                 <option>Any Property Type</option>
                 <option>Single Family</option>
                 <option>Condo</option>
                 <option>Townhouse</option>
                 <option>Multi-Family</option>
             </select>
-            <select>
+            <select id="bedrooms">
                 <option>Any Bedrooms</option>
                 <option>1+</option>
                 <option>2+</option>
@@ -53,8 +53,8 @@
                 <option>4+</option>
             </select>
         </aside>
-        <section class ="map">
-            <p>🗺️ Map Area</p>
+        <section class="map">
+            <div id="map"></div>
             <div class="legend">
                 <span>🟢 Affordable</span>
                 <span>🟡 Moderate</span>
@@ -66,18 +66,19 @@
     <footer class="results">
         <div class="stat">
             <span>Avg Income</span>
-            <strong>$45k</strong>
+            <strong id="avgIncome">$45k</strong>
         </div>
         <div class="stat">
             <span>Avg Home</span>
-            <strong>$280k</strong>
+            <strong id="avgHome">$280k</strong>
         </div>
         <div class="stat">
             <span>Score</span>
-            <strong>72/100</strong>
+            <strong id="score">72/100</strong>
         </div>
     </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
 </body>
-
 </html>
-
