@@ -1,13 +1,11 @@
-// Initialize map centered on USA
-const map = L.map('map').setView([39.8283, -98.5795], 4);
+//USA based world map
+const map = L.map('map').setView([39.8283, -98.5795],4);
 
-// Add base tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-// Mock affordability data by state (for demo)
 const stateData = {
     'Florida': { score: 65, income: 52000, home: 350000 },
     'Texas': { score: 72, income: 58000, home: 290000 },
@@ -31,25 +29,22 @@ const stateData = {
     'Alabama': { score: 77, income: 44000, home: 170000 }
 };
 
-// Color based on affordability score
 function getColor(score) {
-    if (score >= 65) return '#34a853'; // Green - affordable
-    if (score >= 45) return '#fbbc04'; // Yellow - moderate
-    return '#ea4335'; // Red - expensive
+    if (score >= 65) return '#34a853';
+    if (score >= 45) return '#fbbc04';
+    return '#ea4335';
 }
 
-// Format currency
 function formatCurrency(num) {
     if (num >= 1000000) return '$' + (num / 1000000).toFixed(1) + 'M';
     return '$' + (num / 1000).toFixed(0) + 'k';
 }
 
-// Style each state based on data
 function style(feature) {
     const stateName = feature.properties.name;
     const data = stateData[stateName];
     const score = data ? data.score : 50; // default if no data
-
+    
     return {
         fillColor: getColor(score),
         weight: 1,
@@ -59,7 +54,6 @@ function style(feature) {
     };
 }
 
-// Highlight on hover
 function highlightFeature(e) {
     const layer = e.target;
     layer.setStyle({
@@ -70,13 +64,17 @@ function highlightFeature(e) {
     layer.bringToFront();
 }
 
-// Reset highlight
-function resetHighlight(e) {
-    geojsonLayer.resetStyle(e.target);
+function resetHighlight(e){
+    const layer = e.target;
+    layer.setStyle({
+        weight: 1,
+        color: '#fff',
+        fillOpacity: 0.7
+    });
+    layer.bringToFront();
 }
 
-// Click to zoom and show info
-function onEachFeature(feature, layer) {
+function onEachFeature(feature, layer){
     const stateName = feature.properties.name;
     const data = stateData[stateName];
 
@@ -93,20 +91,19 @@ function onEachFeature(feature, layer) {
         }
     });
 
-    // Popup
-    if (data) {
+    if(data) {
         layer.bindPopup(`
             <strong>${stateName}</strong><br>
             Score: ${data.score}/100<br>
             Avg Income: ${formatCurrency(data.income)}<br>
             Avg Home: ${formatCurrency(data.home)}
         `);
+
     } else {
         layer.bindPopup(`<strong>${stateName}</strong><br>No data available`);
     }
 }
 
-// Load US states GeoJSON
 let geojsonLayer;
 fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
     .then(response => response.json())
@@ -117,11 +114,8 @@ fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geo
         }).addTo(map);
     });
 
-// Search functionality
-document.getElementById('searchBtn').addEventListener('click', function() {
-    const stateInput = document.getElementById('state').value.toUpperCase();
-
-    // State abbreviation to full name mapping
+document.getElementById('resetBtn').addEventListener('click', function() {
+    const stateInput = document.getElementById('state');
     const stateNames = {
         'FL': 'Florida', 'TX': 'Texas', 'CA': 'California', 'NY': 'New York',
         'OH': 'Ohio', 'GA': 'Georgia', 'NC': 'North Carolina', 'AZ': 'Arizona',
@@ -130,14 +124,13 @@ document.getElementById('searchBtn').addEventListener('click', function() {
         'TN': 'Tennessee', 'IN': 'Indiana', 'MO': 'Missouri', 'AL': 'Alabama'
     };
 
-    const stateName = stateNames[stateInput];
+    const stateName = stateNames[stateInput.value.toUpperCase()];
     if (stateName && stateData[stateName]) {
         const data = stateData[stateName];
         document.getElementById('avgIncome').textContent = formatCurrency(data.income);
         document.getElementById('avgHome').textContent = formatCurrency(data.home);
         document.getElementById('score').textContent = data.score + '/100';
 
-        // Find and zoom to state
         geojsonLayer.eachLayer(layer => {
             if (layer.feature.properties.name === stateName) {
                 map.fitBounds(layer.getBounds());
@@ -146,4 +139,4 @@ document.getElementById('searchBtn').addEventListener('click', function() {
     }
 });
 
-console.log('Map loaded!');
+console.log('Map initialized!');
