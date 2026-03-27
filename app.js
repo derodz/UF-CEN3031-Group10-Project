@@ -114,7 +114,7 @@ fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geo
         }).addTo(map);
     });
 
-document.getElementById('resetBtn').addEventListener('click', function() {
+document.getElementById('searchBtn').addEventListener('click', function() {
     const stateInput = document.getElementById('state');
     const stateNames = {
         'FL': 'Florida', 'TX': 'Texas', 'CA': 'California', 'NY': 'New York',
