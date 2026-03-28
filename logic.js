@@ -64,13 +64,11 @@ for (let i = 1; i < lines.length; i++) {
 }
 
 //Testing Code
-// collect and sort affordability scores
-//const h3_affordability_scores = locations.map(c => c.getAffordabilityScore());
 
 //print results, cap at 100, newline every 12 items
-for (let i = 0; i < h3_affordability_scores.length; i++) {
-    if (h3_affordability_scores[i] >= 100) {
-        locations[i].setAffordabilityScore(100)
+for (let i = 0; i < locations.length; i++) {
+    if (locations[i].getAffordabilityScore(100) >= 100) {
+        locations[i].setAffordabilityScore(100);
     }
     //if (i % 12 === 0) {
         //process.stdout.write('\n');
