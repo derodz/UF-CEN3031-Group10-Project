@@ -78,4 +78,4 @@ for (let i = 0; i < h3_affordability_scores.length; i++) {
     //process.stdout.write(locations[i].getAffordabilityScore()toFixed(2) + ', ');
 }
 
-module.exports =  {Location, locations, h3_affordability_scores}
+module.exports =  {Location, locations}
