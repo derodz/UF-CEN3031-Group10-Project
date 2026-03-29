@@ -56,6 +56,7 @@ function style(feature) {
 
 function highlightFeature(e) {
     const layer = e.target;
+    if (layer === decoloredState) return;
     layer.setStyle({
         weight: 3,
         color: '#333',
@@ -66,6 +67,7 @@ function highlightFeature(e) {
 
 function resetHighlight(e){
     const layer = e.target;
+    if (layer === decoloredState) return;
     layer.setStyle({
         weight: 1,
         color: '#fff',
@@ -114,18 +116,120 @@ fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geo
         }).addTo(map);
     });
 
-document.getElementById('searchBtn').addEventListener('click', function() {
-    const stateInput = document.getElementById('state');
-    const stateNames = {
-        'FL': 'Florida', 'TX': 'Texas', 'CA': 'California', 'NY': 'New York',
-        'OH': 'Ohio', 'GA': 'Georgia', 'NC': 'North Carolina', 'AZ': 'Arizona',
-        'WA': 'Washington', 'CO': 'Colorado', 'MI': 'Michigan', 'PA': 'Pennsylvania',
-        'IL': 'Illinois', 'VA': 'Virginia', 'NV': 'Nevada', 'OR': 'Oregon',
-        'TN': 'Tennessee', 'IN': 'Indiana', 'MO': 'Missouri', 'AL': 'Alabama'
-    };
+const stateNames = {
+    'FL': 'Florida', 'TX': 'Texas', 'CA': 'California', 'NY': 'New York',
+    'OH': 'Ohio', 'GA': 'Georgia', 'NC': 'North Carolina', 'AZ': 'Arizona',
+    'WA': 'Washington', 'CO': 'Colorado', 'MI': 'Michigan', 'PA': 'Pennsylvania',
+    'IL': 'Illinois', 'VA': 'Virginia', 'NV': 'Nevada', 'OR': 'Oregon',
+    'TN': 'Tennessee', 'IN': 'Indiana', 'MO': 'Missouri', 'AL': 'Alabama'
+};
 
-    const stateName = stateNames[stateInput.value.toUpperCase()];
+let zipMarker = null;
+let zipBoundaryLayer = null;
+let decoloredState = null;
+
+function clearZipHighlight() {
+    if (zipMarker) { map.removeLayer(zipMarker); zipMarker = null; }
+    if (zipBoundaryLayer) { map.removeLayer(zipBoundaryLayer); zipBoundaryLayer = null; }
+    // Restore previously decolored state
+    if (decoloredState) {
+        decoloredState.setStyle(style(decoloredState.feature));
+        decoloredState = null;
+    }
+}
+
+function fetchZipBoundary(zip) {
+    const url = `https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/georef-united-states-of-america-zcta5/records?where=zcta5_code%3D%22${zip}%22&select=geo_shape,zcta5_code&limit=1`;
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.results && data.results.length > 0) {
+                return data.results[0].geo_shape;
+            }
+            return null;
+        });
+}
+
+function searchByZip(zip) {
+    // Fetch location info and boundary in parallel
+    Promise.all([
+        fetch(`https://api.zippopotam.us/us/${zip}`).then(r => {
+            if (!r.ok) throw new Error('Invalid zip code');
+            return r.json();
+        }),
+        fetchZipBoundary(zip)
+    ])
+    .then(([locationData, boundary]) => {
+        const lat = parseFloat(locationData.places[0].latitude);
+        const lng = parseFloat(locationData.places[0].longitude);
+        const city = locationData.places[0]['place name'];
+        const stateAbbr = locationData.places[0]['state abbreviation'];
+        const stateName = stateNames[stateAbbr];
+
+        clearZipHighlight();
+
+        // Decolor the state so the zip boundary stands out
+        if (geojsonLayer) {
+            geojsonLayer.eachLayer(layer => {
+                if (layer.feature.properties.name === stateName) {
+                    layer.setStyle({
+                        fillColor: 'transparent',
+                        fillOpacity: 0,
+                        weight: 1,
+                        color: '#ccc'
+                    });
+                    decoloredState = layer;
+                }
+            });
+        }
+
+        // Draw the zip code boundary polygon
+        if (boundary) {
+            zipBoundaryLayer = L.geoJson(boundary, {
+                style: {
+                    color: '#0d47a1',
+                    weight: 4,
+                    fillColor: '#1a73e8',
+                    fillOpacity: 0.35
+                }
+            }).addTo(map);
+            zipBoundaryLayer.bringToFront();
+            map.fitBounds(zipBoundaryLayer.getBounds(), { padding: [20, 20] });
+        } else {
+            map.setView([lat, lng], 13);
+        }
+
+        // Place marker at the true center of the boundary if available
+        const markerPos = zipBoundaryLayer
+            ? zipBoundaryLayer.getBounds().getCenter()
+            : L.latLng(lat, lng);
+        zipMarker = L.marker(markerPos).addTo(map);
+        zipMarker.bindPopup(`
+            <strong>${zip} - ${city}, ${stateAbbr}</strong><br>
+            ${stateName && stateData[stateName]
+                ? `Score: ${stateData[stateName].score}/100<br>
+                   Avg Income: ${formatCurrency(stateData[stateName].income)}<br>
+                   Avg Home: ${formatCurrency(stateData[stateName].home)}`
+                : 'No detailed data available'}
+        `).openPopup();
+
+        // Update footer stats
+        if (stateName && stateData[stateName]) {
+            const sd = stateData[stateName];
+            document.getElementById('avgIncome').textContent = formatCurrency(sd.income);
+            document.getElementById('avgHome').textContent = formatCurrency(sd.home);
+            document.getElementById('score').textContent = sd.score + '/100';
+        }
+    })
+    .catch(() => {
+        alert('Zip code not found. Please enter a valid 5-digit US zip code.');
+    });
+}
+
+function searchByState(abbr) {
+    const stateName = stateNames[abbr.toUpperCase()];
     if (stateName && stateData[stateName]) {
+        clearZipHighlight();
         const data = stateData[stateName];
         document.getElementById('avgIncome').textContent = formatCurrency(data.income);
         document.getElementById('avgHome').textContent = formatCurrency(data.home);
@@ -136,6 +240,19 @@ document.getElementById('searchBtn').addEventListener('click', function() {
                 map.fitBounds(layer.getBounds());
             }
         });
+    }
+}
+
+document.getElementById('searchBtn').addEventListener('click', function() {
+    const zip = document.getElementById('zipcode').value.trim();
+    const state = document.getElementById('state').value.trim();
+
+    if (zip.length === 5 && /^\d{5}$/.test(zip)) {
+        searchByZip(zip);
+    } else if (state.length === 2) {
+        searchByState(state);
+    } else {
+        alert('Please enter a valid 5-digit zip code or 2-letter state abbreviation.');
     }
 });
 
