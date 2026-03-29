@@ -59,7 +59,7 @@ for (let i = 1; i < lines.length; i++) {
         housing_price = tokens[60];
     }
 
-    const locations = new Location(name, income, housing_price);
+    const location = new Location(name, income, housing_price);
     locations.push(location);
 }
 
