@@ -38,7 +38,7 @@ class Location {
     setAffordabilityScore(afscore) { this.affordability_score = afscore; }
 }
 
-const lines = fs.readFileSync('counties.csv', 'utf8').split('\n');
+const lines = fs.readFileSync('rawdata/lai_data_us_places.csv', 'utf8').split('\n');
 const locations = [];
 
 // skip first line (header)
