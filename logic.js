@@ -19,7 +19,7 @@ class Location {
 
     normalizeData(housing_price) {
         var affordability_score = 0;
-        if (housing_price <= 25) {
+        if (housing_price <= 26.7) {
             affordability_score = 100;
         } 
         else if (housing_price >= 60) {
