@@ -1,84 +1,100 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title> Affordable Housing Finder</title>
-        <link rel="stylesheet" href="styles.css">
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Affordable Housing Finder</title>
+        <link rel="stylesheet" href="styles.css" />
     </head>
+    <body>
+        <header>
+            <h1>🏠 Affordable Housing Finder</h1>
+        </header>
 
-<body>
-    <header>
-        <h1>🏠 Affordable Housing Finder</h1>
-    </header>
+        <main>
+            <aside class="sidebar">
+                <h2>Search</h2>
+                <input type="text" id="zipcode" placeholder="Enter ZIP Code" maxlength="5" />
+                <input type="text" id="state" placeholder="Enter State (e.g. NY)" maxlength="2" />
+                <button id="searchBtn">Search</button>
+                <h3>Filters</h3>
+                <select id="income">
+                    <option>Any Income</option>
+                    <option>Under $50k</option>
+                    <option>$50k - $100k</option>
+                    <option>$100k+</option>
+                </select>
+                <select id="price">
+                    <option>Any Price</option>
+                    <option>Under $200k</option>
+                    <option>$200k - $400k</option>
+                    <option>$400k+</option>
+                </select>
+                <select id="risk">
+                    <option>Any Risk Level</option>
+                    <option>Low Risk</option>
+                    <option>Medium Risk</option>
+                    <option>High Risk</option>
+                </select>
+                <select id="propertyType">
+                    <option>Any Property Type</option>
+                    <option>Single Family</option>
+                    <option>Condo</option>
+                    <option>Townhouse</option>
+                    <option>Multi-Family</option>
+                </select>
+                <select id="bedrooms">
+                    <option>Any Bedrooms</option>
+                    <option>1+</option>
+                    <option>2+</option>
+                    <option>3+</option>
+                    <option>4+</option>
+                </select>
+            </aside>
+            <section class="map">
+                <div id="map"></div>
+                <div class="legend">
+                    <span>🟢 Affordable</span>
+                    <span>🟡 Moderate</span>
+                    <span>🔴 Expensive</span>
+                </div>
+            </section>
+        </main>
 
-    <main>
-        <aside class="sidebar">
-            <h2>Search</h2>
-            <input type="text" id="zipcode" placeholder="Enter ZIP Code" maxlength="5">
-            <input type="text" id="state" placeholder="Enter State (e.g. NY)" maxlength="2">
-            <button id="searchBtn">Search</button>
-            <h3>Filters</h3>
-            <select id="income">
-                <option>Any Income</option>
-                <option>Under $50k</option>
-                <option>$50k - $100k</option>
-                <option>$100k+</option>
-            </select>
-            <select id="price">
-                <option>Any Price</option>
-                <option>Under $200k</option>
-                <option>$200k - $400k</option>
-                <option>$400k+</option>
-            </select>
-            <select id="risk">
-                <option>Any Risk Level</option>
-                <option>Low Risk</option>
-                <option>Medium Risk</option>
-                <option>High Risk</option>
-            </select>
-            <select id="propertyType">
-                <option>Any Property Type</option>
-                <option>Single Family</option>
-                <option>Condo</option>
-                <option>Townhouse</option>
-                <option>Multi-Family</option>
-            </select>
-            <select id="bedrooms">
-                <option>Any Bedrooms</option>
-                <option>1+</option>
-                <option>2+</option>
-                <option>3+</option>
-                <option>4+</option>
-            </select>
-        </aside>
-        <section class="map">
-            <div id="map"></div>
-            <div class="legend">
-                <span>🟢 Affordable</span>
-                <span>🟡 Moderate</span>
-                <span>🔴 Expensive</span>
+        <footer class="results">
+            <div class="stat">
+                <span>Avg Income</span>
+                <strong id="avgIncome">$45k</strong>
             </div>
-        </section>
-    </main>
+            <div class="stat">
+                <span>Avg Home</span>
+                <strong id="avgHome">$280k</strong>
+            </div>
+            <div class="stat">
+                <span>Score</span>
+                <strong id="score">72/100</strong>
+            </div>
+        </footer>
 
-    <footer class="results">
-        <div class="stat">
-            <span>Avg Income</span>
-            <strong id="avgIncome">$45k</strong>
-        </div>
-        <div class="stat">
-            <span>Avg Home</span>
-            <strong id="avgHome">$280k</strong>
-        </div>
-        <div class="stat">
-            <span>Score</span>
-            <strong id="score">72/100</strong>
-        </div>
-    </footer>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="app.js"></script>
+        <script type="module" lang="javascript">
+            import * as api from './api/index.mjs';
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app.js"></script>
-</body>
+            // Load initial database connection and data
+            await api.init();
+
+            /** @type {{ zip: string, place: string, placeName: string }[]} */
+            const zipCodesAndGeoIds = api.zipCodes;
+
+            console.debug('Testing API function: getMedianIncomeByZip');
+            api.getMedianIncomeByZip('14901')
+                .then((income) => {
+                    console.debug('Median income for ZIP 14901:', income);
+                })
+                .catch((error) => {
+                    console.error('Error fetching median income:', error);
+                });
+        </script>
+    </body>
 </html>
