@@ -22,12 +22,23 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = firestore.initializeFirestore(app, {}, '(default)');
-const analytics = getAnalytics(app);
 
 /**
  * Housing Data Schema
  */
 const dbSchema = {
+    /**
+     * Name/path of the zip code to GEOID mapping collection
+     */
+    zipCodeGeoIdMapCollection: 'zip-codes-to-places',
+    zipCodeGeoIdData: {
+        zip: 'zip',
+        /**
+         * 7 character place code (GEOID)
+         */
+        place: 'place',
+        placeName: 'placeName',
+    },
     /**
      * Name/path of the price and income collection
      */
@@ -36,7 +47,6 @@ const dbSchema = {
      * The fields in each document/row of the price and income collection
      */
     priceAndIncomeData: {
-        zip: 'zip',
         /**
          * 7 character place code
          */
@@ -60,56 +70,119 @@ const dbSchema = {
     },
 };
 
-const helloWorld = () => {
+/** @type {{ zip: string, place: string, placeName: string }[]} */
+export const zipCodes = [];
+
+const priceAndIncomeCollection = () => firestore.collection(db, dbSchema.priceAndIncomeCollection);
+
+const getGeoidByZip = (zip) => {
+    const geoId = zipCodes.find((zipCode) => zipCode.zip === zip)?.place;
+
+    if (!geoId) {
+        console.error(`No GEOID found for zip code ${zip}`);
+    }
+
+    return geoId;
+};
+
+const LoadZipCodeMapping = async () => {
+    const zipCodeMapCollection = await firestore.collection(db, dbSchema.zipCodeGeoIdMapCollection);
+    const zipCodeMapSnapshot = await firestore.getDocs(zipCodeMapCollection);
+    zipCodeMapSnapshot.forEach((doc) => {
+        const data = doc.data();
+        zipCodes.push(data);
+    });
+};
+
+export const init = async () => {
     console.debug('Hello UFL!');
+    await LoadZipCodeMapping();
 };
 
 /**
- *
+ * Returns the median income for the given zip code
  * @param {number} zip
  */
-export const getMedianIncomeByZip = (zip) => {
-    // TODO: Implement this function to retrieve median income data for the given zip code
+export const getMedianIncomeByZip = async (zip) => {
+    const geoId = getGeoidByZip(zip);
+    if (!geoId) {
+        return null;
+    }
+    const priceAndIncomeDocRef = firestore.doc(db, dbSchema.priceAndIncomeCollection, geoId);
+    const priceAndIncomeSnapshot = await firestore.getDoc(priceAndIncomeDocRef);
+    if (!priceAndIncomeSnapshot.exists()) {
+        console.error(`No price and income data found for GEOID ${geoId} (zip code ${zip})`);
+        return null;
+    }
+    const priceAndIncomeData = priceAndIncomeSnapshot.data();
+    return priceAndIncomeData[dbSchema.priceAndIncomeData.medianIncome];
 };
 
 /**
- *
+ * Returns the percentage of income that goes towards housing costs for the given zip code
  * @param {number} zip
  */
-export const getMedianHousingCostByZip = (zip) => {
-    // TODO: Implement this function to retrieve median housing cost data for the given zip code
+export const getPercentHousingCostByZip = async (zip) => {
+    const geoId = getGeoidByZip(zip);
+    if (!geoId) {
+        console.error(`No price and income data found for GEOID ${geoId} (zip code ${zip})`);
+        return null;
+    }
+    const priceAndIncomeDocRef = firestore.doc(db, dbSchema.priceAndIncomeCollection, geoId);
+    const priceAndIncomeSnapshot = await firestore.getDoc(priceAndIncomeDocRef);
+    if (!priceAndIncomeSnapshot.exists()) {
+        console.error(`No price and income data found for GEOID ${geoId} (zip code ${zip})`);
+        return null;
+    }
+    const priceAndIncomeData = priceAndIncomeSnapshot.data();
+    return priceAndIncomeData[dbSchema.priceAndIncomeData.percentHousingCostOfIncome];
 };
 
 /**
- *
+ * TODO: We still don't have data for this (Sprint 2)
  * @param {number} zip
  */
-export const getSupplyAndDemandDataByZip = (zip) => {
+export const getSupplyAndDemandDataByZip = async (zip) => {
+    // TODO: We still don't have data for this (Sprint 2)
     // TODO: Implement this function to retrieve supply and demand data for the given zip code
 };
 
 /**
- *
+ * TODO: We still don't have data for this (Sprint 2)
  * @param {number} zip
  */
-export const getInvestorActivityDataByZip = (zip) => {
+export const getInvestorActivityDataByZip = async (zip) => {
+    // TODO: We still don't have data for this (Sprint 2)
     // TODO: Implement this function to retrieve investor activity data for the given zip code
 };
 
 /**
- *
+ * TODO: We still don't have data for this (Sprint 2)
  * @param {number} zip
  */
-export const getUnemploymentDataByZip = (zip) => {
+export const getUnemploymentDataByZip = async (zip) => {
+    // TODO: We still don't have data for this (Sprint 2)
     // TODO: Implement this function to retrieve unemployment data for the given zip code
 };
 
 /**
- *
+ * Returns places based on median income <= provided budget
  * @param {number} budget
+ * @returns {{ zip: string, geoId: string, city: string, medianIncome: string, }[]}
  */
-export const getTopHousingLocationsByBudget = (budget) => {
-    // TODO: Implement this function to retrieve top housing locations by budget
+export const getTopHousingLocationsByBudget = async (budget) => {
+    const priceAndIncomeQuery = firestore.query(priceAndIncomeCollection(), firestore.where(dbSchema.priceAndIncomeData.medianIncome, '<=', budget));
+    const querySnapshot = await firestore.getDocs(priceAndIncomeQuery);
+    const affordableLocations = [];
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const zip = zipCodes.find((zipCode) => zipCode.place === data[dbSchema.priceAndIncomeData.geoId])?.zip;
+        affordableLocations.push({
+            zip: zip,
+            geoId: data[dbSchema.priceAndIncomeData.geoId],
+            city: data[dbSchema.priceAndIncomeData.city],
+            medianIncome: data[dbSchema.priceAndIncomeData.medianIncome],
+        });
+    });
+    return affordableLocations;
 };
-
-helloWorld();
