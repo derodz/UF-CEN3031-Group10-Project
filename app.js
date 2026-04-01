@@ -14,39 +14,71 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // ===========================================
 
 const stateData = {
-    'Florida':        { score: 65, income: 52000, home: 350000 },
-    'Texas':          { score: 72, income: 58000, home: 290000 },
-    'California':     { score: 28, income: 75000, home: 750000 },
-    'New York':       { score: 35, income: 68000, home: 550000 },
-    'Ohio':           { score: 78, income: 48000, home: 180000 },
-    'Georgia':        { score: 68, income: 54000, home: 310000 },
+    'Alabama': { score: 77, income: 44000, home: 170000 },
+    'Alaska': { score: 50, income: 75000, home: 450000 }, // Placeholder data
+    'Arizona': { score: 55, income: 52000, home: 400000 },
+    'Arkansas': { score: 73, income: 42000, home: 150000 }, // Placeholder data
+    'California': { score: 28, income: 75000, home: 750000 },
+    'Colorado': { score: 48, income: 68000, home: 520000 },
+    'Connecticut': { score: 55, income: 70000, home: 380000 }, // Placeholder data
+    'Delaware': { score: 60, income: 60000, home: 320000 }, // Placeholder data
+    'Florida': { score: 65, income: 52000, home: 350000 },
+    'Georgia': { score: 68, income: 54000, home: 310000 },
+    'Hawaii': { score: 30, income: 70000, home: 600000 }, // Placeholder data
+    'Idaho': { score: 65, income: 50000, home: 300000 }, // Placeholder data
+    'Illinois': { score: 58, income: 60000, home: 320000 },
+    'Indiana': { score: 76, income: 47000, home: 190000 },
+    'Iowa': { score: 72, income: 52000, home: 210000 }, // Placeholder data
+    'Kansas': { score: 70, income: 50000, home: 180000 }, // Placeholder data
+    'Kentucky': { score: 74, income: 45000, home: 160000 }, // Placeholder data
+    'Louisiana': { score: 71, income: 43000, home: 170000 }, // Placeholder data
+    'Maine': { score: 60, income: 52000, home: 250000 }, // Placeholder data
+    'Maryland': { score: 50, income: 75000, home: 450000 }, // Placeholder data
+    'Massachusetts': { score: 45, income: 72000, home: 500000 }, // Placeholder data
+    'Michigan': { score: 74, income: 50000, home: 220000 },
+    'Minnesota': { score: 68, income: 62000, home: 350000 }, // Placeholder data
+    'Mississippi': { score: 76, income: 40000, home: 150000 }, // Placeholder data
+    'Missouri': { score: 75, income: 48000, home: 200000 },
+    'Montana': { score: 70, income: 52000, home: 280000 }, // Placeholder data
+    'Nebraska': { score: 72, income: 55000, home: 230000 }, // Placeholder data
+    'Nevada': { score: 45, income: 54000, home: 420000 },
+    'New Hampshire': { score: 62, income: 65000, home: 300000 }, // Placeholder data
+    'New Jersey': { score: 55, income: 70000, home: 400000 }, // Placeholder data
+    'New Mexico': { score: 68, income: 45000, home: 220000 }, // Placeholder data
+    'New York': { score: 35, income: 68000, home: 550000 },
     'North Carolina': { score: 70, income: 51000, home: 280000 },
-    'Arizona':        { score: 55, income: 52000, home: 400000 },
-    'Washington':     { score: 42, income: 72000, home: 580000 },
-    'Colorado':       { score: 48, income: 68000, home: 520000 },
-    'Michigan':       { score: 74, income: 50000, home: 220000 },
-    'Pennsylvania':   { score: 62, income: 55000, home: 280000 },
-    'Illinois':       { score: 58, income: 60000, home: 320000 },
-    'Virginia':       { score: 52, income: 65000, home: 400000 },
-    'Nevada':         { score: 45, income: 54000, home: 420000 },
-    'Oregon':         { score: 40, income: 58000, home: 480000 },
-    'Tennessee':      { score: 71, income: 49000, home: 260000 },
-    'Indiana':        { score: 76, income: 47000, home: 190000 },
-    'Missouri':       { score: 75, income: 48000, home: 200000 },
-    'Alabama':        { score: 77, income: 44000, home: 170000 }
+    'North Dakota': { score: 75, income: 60000, home: 250000 }, // Placeholder data
+    'Ohio': { score: 78, income: 48000, home: 180000 },
+    'Oklahoma': { score: 73, income: 45000, home: 160000 }, // Placeholder data
+    'Oregon': { score: 40, income: 58000, home: 480000 },
+    'Pennsylvania': { score: 62, income: 55000, home: 280000 },
+    'Rhode Island': { score: 55, income: 60000, home: 350000 }, // Placeholder data
+    'South Carolina': { score: 72, income: 47000, home: 220000 }, // Placeholder data
+    'South Dakota': { score: 74, income: 52000, home: 240000 }, // Placeholder data
+    'Tennessee': { score: 71, income: 49000, home: 260000 },
+    'Texas': { score: 72, income: 58000, home: 290000 },
+    'Utah': { score: 60, income: 62000, home: 400000 }, // Placeholder data
+    'Vermont': { score: 65, income: 55000, home: 280000 }, // Placeholder data
+    'Virginia': { score: 52, income: 65000, home: 400000 },
+    'Washington': { score: 42, income: 72000, home: 580000 },
+    'West Virginia': { score: 88, income: 42000, home: 150000 }, // Placeholder data
+    'Wisconsin': { score: 70, income: 55000, home: 260000 },
+    'Wyoming': { score: 78, income: 58000, home: 300000 } // Placeholder data
 };
 
 const stateNames = {
-    'FL': 'Florida',        'TX': 'Texas',
-    'CA': 'California',     'NY': 'New York',
-    'OH': 'Ohio',           'GA': 'Georgia',
-    'NC': 'North Carolina', 'AZ': 'Arizona',
-    'WA': 'Washington',     'CO': 'Colorado',
-    'MI': 'Michigan',       'PA': 'Pennsylvania',
-    'IL': 'Illinois',       'VA': 'Virginia',
-    'NV': 'Nevada',         'OR': 'Oregon',
-    'TN': 'Tennessee',      'IN': 'Indiana',
-    'MO': 'Missouri',       'AL': 'Alabama'
+    'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas',
+    'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware',
+    'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois',
+    'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana',
+    'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan',
+    'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana',
+    'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
+    'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota',
+    'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island',
+    'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas',
+    'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington',
+    'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
 };
 
 // ===========================================
