@@ -1,0 +1,5 @@
+{
+    "scripts": {
+        "build": "cp index.html public/index.html && cp app.js public/app.js &7 cp styles.css public/styles.css && cp -r api/ public/api/"
+    }
+}
