@@ -196,6 +196,21 @@ function decolorState(stateName) {
     });
 }
 
+//Affordability Score Calculation Logic
+function calculateAffordabilityScore(income, home) {
+    var affordability_score = 0;
+        if (housing_price <= 26.7) {
+            affordability_score = 100;
+        } 
+        else if (housing_price >= 60) {
+            affordability_score = 0;
+        } 
+        else {
+            affordability_score = 3 * (60 - housing_price);
+        }
+        return affordability_score;
+}
+
 function searchByZip(zip) {
     Promise.all([
         fetch(`${ZIP_LOCATION_API}/${zip}`).then((r) => {
@@ -215,6 +230,9 @@ function searchByZip(zip) {
             const monthlyHousingCost = await censusApi.getMedianMonthlyHousingCostByZip(zip);
             const medianPrices = monthlyHousingCost * 12;
             // TODO: Calculate score and add to this object
+            const affordabilityScore = calculateAffordabilityScore(income, medianPrices);
+            //TODO
+
             const data = { score: 0, income, home: medianPrices };
             console.debug('fetched data for zip', income, monthlyHousingCost);
 
