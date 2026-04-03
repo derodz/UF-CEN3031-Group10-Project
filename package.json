@@ -1,0 +1,5 @@
+{
+    "scripts": {
+        "build": "mkdir -p public/api && cp index.html public/index.html && cp app.js public/app.js && cp styles.css public/styles.css && cp -r api/. public/api/"
+    }
+}
