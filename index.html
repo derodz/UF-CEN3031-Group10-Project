@@ -78,24 +78,6 @@
         </footer>
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <script src="app.js"></script>
-        <script type="module" lang="javascript">
-            import * as api from './api/index.mjs';
-
-            // Load initial database connection and data
-            await api.init();
-
-            /** @type {{ zip: string, place: string, placeName: string }[]} */
-            const zipCodesAndGeoIds = api.zipCodes;
-
-            console.debug('Testing API function: getMedianIncomeByZip');
-            api.getMedianIncomeByZip('14901')
-                .then((income) => {
-                    console.debug('Median income for ZIP 14901:', income);
-                })
-                .catch((error) => {
-                    console.error('Error fetching median income:', error);
-                });
-        </script>
+        <script type="module" src="app.js"></script>
     </body>
 </html>
