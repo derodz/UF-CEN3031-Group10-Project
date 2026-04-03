@@ -280,6 +280,7 @@ function searchByState(abbr) {
     geojsonLayer.eachLayer(layer => {
         if (layer.feature.properties.name === stateName) {
             map.fitBounds(layer.getBounds());
+            layer.openPopup(layer.getBounds().getCenter());
         }
     });
 }
