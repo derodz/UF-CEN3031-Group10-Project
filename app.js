@@ -196,6 +196,20 @@ function decolorState(stateName) {
     });
 }
 
+//Affordability Score Calculation Logic
+function calculateAffordabilityScore(annualIncome, annualHousingCost) {
+    var affordability_score = 0;
+    var housing_price = annualHousingCost / annualIncome;
+    if (housing_price <= 26.7) {
+        affordability_score = 100;
+    } else if (housing_price >= 60) {
+        affordability_score = 0;
+    } else {
+        affordability_score = 3 * (60 - housing_price);
+    }
+    return affordability_score;
+}
+
 function searchByZip(zip) {
     Promise.all([
         fetch(`${ZIP_LOCATION_API}/${zip}`).then((r) => {
@@ -213,9 +227,9 @@ function searchByZip(zip) {
             const stateName = stateNames[stateAbbr];
             const income = await censusApi.getMedianIncomeByZip(zip);
             const monthlyHousingCost = await censusApi.getMedianMonthlyHousingCostByZip(zip);
-            const medianPrices = monthlyHousingCost * 12;
-            // TODO: Calculate score and add to this object
-            const data = { score: 0, income, home: medianPrices };
+            const medianPrice = monthlyHousingCost * 12;
+            const affordabilityScore = calculateAffordabilityScore(income, medianPrice);
+            const data = { score: affordabilityScore, income, home: medianPrice };
             console.debug('fetched data for zip', income, monthlyHousingCost);
 
             clearZipHighlight();
@@ -253,7 +267,7 @@ function searchByZip(zip) {
         })
         .catch((err) => {
             console.error('Error fetching zip code data:', err);
-            alert('Zip code not found. Please enter a valid 5-digit US zip code.');
+            alert('There was a problem calculating for that zip code. Please ensure it is valid and try again.');
         });
 }
 
