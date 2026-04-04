@@ -233,7 +233,7 @@ function searchByZip(zip) {
             const affordabilityScore = calculateAffordabilityScore(income, medianPrices);
             //TODO
 
-            const data = { score: 0, income, home: medianPrices };
+            const data = { score: affordabilityScore, income, home: medianPrices };
             console.debug('fetched data for zip', income, monthlyHousingCost);
 
             clearZipHighlight();
