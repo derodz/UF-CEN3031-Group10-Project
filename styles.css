@@ -118,3 +118,10 @@ main {
 .stat strong {
     font-size: 1.1rem;
 }
+
+.info {
+    top: 15%;
+    position: relative;
+    float: left;
+    background-color: #fff;
+}
