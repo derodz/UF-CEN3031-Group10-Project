@@ -1,4 +1,8 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
     font-family: system-ui, sans-serif;
@@ -13,7 +17,8 @@ header {
 }
 
 header h1 {
-    font-size: 1.25rem; color: #1a73e8;
+    font-size: 1.25rem;
+    color: #1a73e8;
 }
 
 main {
@@ -33,13 +38,18 @@ main {
     color: #1a73e8;
 }
 
-.sidebar h2, .sidebar h3 {
+.sidebar h2,
+.sidebar h3 {
     font-size: 0.9rem;
     margin-bottom: 0.75rem;
 }
 
-.sidebar h3 {color: #1a73e8}
-.sidebar input, .sidebar select, .sidebar button {
+.sidebar h3 {
+    color: #1a73e8;
+}
+.sidebar input,
+.sidebar select,
+.sidebar button {
     width: 100%;
     padding: 0.6rem;
     margin-bottom: 0.5rem;
@@ -55,7 +65,19 @@ main {
     cursor: pointer;
 }
 
-.sidebar button:hover { background: #1557b0;}
+.sidebar button:hover {
+    background: #1557b0;
+}
+
+.sidebar #history {
+    list-style-type: none;
+    height: 250px;
+    overflow: hidden;
+}
+
+.sidebar #history li {
+    height: 25px;
+}
 
 .map {
     flex: 1;
@@ -85,6 +107,21 @@ main {
     border-top: 1px solid #ddd;
 }
 
-.stat { text-align: center; }
-.stat span { display: block; font-size: 0.75rem; color: #666;}
-.stat strong { font-size: 1.1rem; }
+.stat {
+    text-align: center;
+}
+.stat span {
+    display: block;
+    font-size: 0.75rem;
+    color: #666;
+}
+.stat strong {
+    font-size: 1.1rem;
+}
+
+.info {
+    top: 15%;
+    position: relative;
+    float: left;
+    background-color: #fff;
+}
