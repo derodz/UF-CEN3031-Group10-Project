@@ -76,6 +76,7 @@ function updateFooterStats(income, home, score) {
 
 let geojsonLayer;
 let decoloredState = null;
+let selectedState = null;
 
 function stateStyle(feature) {
     const stateName = feature.properties.name;
@@ -92,15 +93,22 @@ function stateStyle(feature) {
 }
 
 function highlightFeature(e) {
-    if (e.target === decoloredState) return;
-    e.target.setStyle({ weight: 3, color: '#333', fillOpacity: 0.9 });
+    if (e.target === decoloredState || e.target === selectedState) return;
+    e.target.setStyle({ weight: 4, color: '#333', fillOpacity: 1 });
     e.target.bringToFront();
 }
 
 function resetHighlight(e) {
-    if (e.target === decoloredState) return;
+    if (e.target === decoloredState || e.target === selectedState) return;
     e.target.setStyle({ weight: 1, color: '#fff', fillOpacity: 0.7 });
     e.target.bringToFront();
+}
+
+function clearSelectedState() {
+    if (selectedState) {
+        selectedState.setStyle(stateStyle(selectedState.feature));
+        selectedState = null;
+    }
 }
 
 function onEachFeature(feature, layer) {
@@ -158,6 +166,7 @@ function clearZipHighlight() {
         decoloredState.setStyle(stateStyle(decoloredState.feature));
         decoloredState = null;
     }
+    clearSelectedState();
 }
 
 function fetchZipBoundary(zip) {
@@ -245,9 +254,13 @@ function searchByState(abbr) {
     const data = stateData[stateName];
     updateFooterStats(data.income, data.home, data.score);
 
+    clearSelectedState();
     geojsonLayer.eachLayer(layer => {
         if (layer.feature.properties.name === stateName) {
             map.fitBounds(layer.getBounds());
+            layer.setStyle({ weight: 4, color: '#0d47a1', fillColor: '#1a73e8', fillOpacity: 0.6 });
+            layer.bringToFront();
+            selectedState = layer;
         }
     });
 }
