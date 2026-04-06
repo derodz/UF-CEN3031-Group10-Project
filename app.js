@@ -13,6 +13,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // 2. Data
 // ===========================================
 
+import * as censusApi from './api/censusData.mjs';
+
 const stateData = {
     'Florida':        { score: 65, income: 52000, home: 350000 },
     'Texas':          { score: 72, income: 58000, home: 290000 },
@@ -37,16 +39,26 @@ const stateData = {
 };
 
 const stateNames = {
-    'FL': 'Florida',        'TX': 'Texas',
-    'CA': 'California',     'NY': 'New York',
-    'OH': 'Ohio',           'GA': 'Georgia',
-    'NC': 'North Carolina', 'AZ': 'Arizona',
-    'WA': 'Washington',     'CO': 'Colorado',
-    'MI': 'Michigan',       'PA': 'Pennsylvania',
-    'IL': 'Illinois',       'VA': 'Virginia',
-    'NV': 'Nevada',         'OR': 'Oregon',
-    'TN': 'Tennessee',      'IN': 'Indiana',
-    'MO': 'Missouri',       'AL': 'Alabama'
+    FL: 'Florida',
+    TX: 'Texas',
+    CA: 'California',
+    NY: 'New York',
+    OH: 'Ohio',
+    GA: 'Georgia',
+    NC: 'North Carolina',
+    AZ: 'Arizona',
+    WA: 'Washington',
+    CO: 'Colorado',
+    MI: 'Michigan',
+    PA: 'Pennsylvania',
+    IL: 'Illinois',
+    VA: 'Virginia',
+    NV: 'Nevada',
+    OR: 'Oregon',
+    TN: 'Tennessee',
+    IN: 'Indiana',
+    MO: 'Missouri',
+    AL: 'Alabama',
 };
 
 // ===========================================
@@ -94,7 +106,7 @@ function stateStyle(feature) {
 
 function highlightFeature(e) {
     if (e.target === decoloredState || e.target === selectedState) return;
-    e.target.setStyle({ weight: 4, color: '#333', fillOpacity: 1 });
+    e.target.setStyle({ weight: 3, color: '#333', fillOpacity: 0.9 });
     e.target.bringToFront();
 }
 
@@ -121,7 +133,7 @@ function onEachFeature(feature, layer) {
         click: function () {
             map.fitBounds(layer.getBounds());
             if (data) updateFooterStats(data.income, data.home, data.score);
-        }
+        },
     });
 
     if (data) {
@@ -129,22 +141,21 @@ function onEachFeature(feature, layer) {
             `<strong>${stateName}</strong><br>
              Score: ${data.score}/100<br>
              Avg Income: ${formatCurrency(data.income)}<br>
-             Avg Home: ${formatCurrency(data.home)}`
+             Avg Home: ${formatCurrency(data.home)}`,
         );
     } else {
         layer.bindPopup(`<strong>${stateName}</strong><br>No data available`);
     }
 }
 
-const STATES_GEOJSON_URL =
-    'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json';
+const STATES_GEOJSON_URL = 'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json';
 
 fetch(STATES_GEOJSON_URL)
-    .then(response => response.json())
-    .then(data => {
+    .then((response) => response.json())
+    .then((data) => {
         geojsonLayer = L.geoJson(data, {
             style: stateStyle,
-            onEachFeature: onEachFeature
+            onEachFeature: onEachFeature,
         }).addTo(map);
     });
 
@@ -152,16 +163,21 @@ fetch(STATES_GEOJSON_URL)
 // 5. Zip Code Search
 // ===========================================
 
-const ZIP_BOUNDARY_API =
-    'https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/georef-united-states-of-america-zcta5/records';
+const ZIP_BOUNDARY_API = 'https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/georef-united-states-of-america-zcta5/records';
 const ZIP_LOCATION_API = 'https://api.zippopotam.us/us';
 
 let zipMarker = null;
 let zipBoundaryLayer = null;
 
 function clearZipHighlight() {
-    if (zipMarker) { map.removeLayer(zipMarker); zipMarker = null; }
-    if (zipBoundaryLayer) { map.removeLayer(zipBoundaryLayer); zipBoundaryLayer = null; }
+    if (zipMarker) {
+        map.removeLayer(zipMarker);
+        zipMarker = null;
+    }
+    if (zipBoundaryLayer) {
+        map.removeLayer(zipBoundaryLayer);
+        zipBoundaryLayer = null;
+    }
     if (decoloredState) {
         decoloredState.setStyle(stateStyle(decoloredState.feature));
         decoloredState = null;
@@ -172,8 +188,8 @@ function clearZipHighlight() {
 function fetchZipBoundary(zip) {
     const url = `${ZIP_BOUNDARY_API}?where=zcta5_code%3D%22${zip}%22&select=geo_shape,zcta5_code&limit=1`;
     return fetch(url)
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
             if (data.results && data.results.length > 0) return data.results[0].geo_shape;
             return null;
         });
@@ -181,7 +197,7 @@ function fetchZipBoundary(zip) {
 
 function decolorState(stateName) {
     if (!geojsonLayer) return;
-    geojsonLayer.eachLayer(layer => {
+    geojsonLayer.eachLayer((layer) => {
         if (layer.feature.properties.name === stateName) {
             layer.setStyle({ fillColor: 'transparent', fillOpacity: 0, weight: 1, color: '#ccc' });
             decoloredState = layer;
@@ -189,57 +205,79 @@ function decolorState(stateName) {
     });
 }
 
+//Affordability Score Calculation Logic
+function calculateAffordabilityScore(annualIncome, annualHousingCost) {
+    var affordability_score = 0;
+    var housing_price = annualHousingCost / annualIncome;
+    if (housing_price <= 26.7) {
+        affordability_score = 100;
+    } else if (housing_price >= 60) {
+        affordability_score = 0;
+    } else {
+        affordability_score = 3 * (60 - housing_price);
+    }
+    return affordability_score;
+}
+
 function searchByZip(zip) {
     Promise.all([
-        fetch(`${ZIP_LOCATION_API}/${zip}`).then(r => {
+        fetch(`${ZIP_LOCATION_API}/${zip}`).then((r) => {
             if (!r.ok) throw new Error('Invalid zip code');
             return r.json();
         }),
-        fetchZipBoundary(zip)
+        fetchZipBoundary(zip),
     ])
-    .then(([locationData, boundary]) => {
-        const place = locationData.places[0];
-        const lat = parseFloat(place.latitude);
-        const lng = parseFloat(place.longitude);
-        const city = place['place name'];
-        const stateAbbr = place['state abbreviation'];
-        const stateName = stateNames[stateAbbr];
-        const data = stateName ? stateData[stateName] : null;
+        .then(async ([locationData, boundary]) => {
+            const place = locationData.places[0];
+            const lat = parseFloat(place.latitude);
+            const lng = parseFloat(place.longitude);
+            const city = place['place name'];
+            const stateAbbr = place['state abbreviation'];
+            const stateName = stateNames[stateAbbr];
+            const income = await censusApi.getMedianIncomeByZip(zip);
+            const monthlyHousingCost = await censusApi.getMedianMonthlyHousingCostByZip(zip);
+            const medianPrice = monthlyHousingCost * 12;
+            const affordabilityScore = calculateAffordabilityScore(income, medianPrice);
+            const data = { score: affordabilityScore, income, home: medianPrice };
+            console.debug('fetched data for zip', income, monthlyHousingCost);
 
-        clearZipHighlight();
-        decolorState(stateName);
+            clearZipHighlight();
+            decolorState(stateName);
 
-        // Draw zip code boundary polygon
-        if (boundary) {
-            zipBoundaryLayer = L.geoJson(boundary, {
-                style: { color: '#0d47a1', weight: 4, fillColor: '#1a73e8', fillOpacity: 0.35 }
-            }).addTo(map);
-            zipBoundaryLayer.bringToFront();
-            map.fitBounds(zipBoundaryLayer.getBounds(), { padding: [20, 20] });
-        } else {
-            map.setView([lat, lng], 13);
-        }
+            // Draw zip code boundary polygon
+            if (boundary) {
+                zipBoundaryLayer = L.geoJson(boundary, {
+                    style: { color: '#0d47a1', weight: 4, fillColor: '#1a73e8', fillOpacity: 0.35 },
+                }).addTo(map);
+                zipBoundaryLayer.bringToFront();
+                map.fitBounds(zipBoundaryLayer.getBounds(), { padding: [20, 20] });
+            } else {
+                map.setView([lat, lng], 13);
+            }
 
-        // Place marker at the true center of the boundary
-        const markerPos = zipBoundaryLayer
-            ? zipBoundaryLayer.getBounds().getCenter()
-            : L.latLng(lat, lng);
+            // Place marker at the true center of the boundary
+            const markerPos = zipBoundaryLayer ? zipBoundaryLayer.getBounds().getCenter() : L.latLng(lat, lng);
 
-        zipMarker = L.marker(markerPos).addTo(map);
-        zipMarker.bindPopup(
-            `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
-             ${data
-                 ? `Score: ${data.score}/100<br>
+            zipMarker = L.marker(markerPos).addTo(map);
+            zipMarker
+                .bindPopup(
+                    `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
+             ${
+                 data
+                     ? `Score: ${data.score}/100<br>
                     Avg Income: ${formatCurrency(data.income)}<br>
                     Avg Home: ${formatCurrency(data.home)}`
-                 : 'No detailed data available'}`
-        ).openPopup();
+                     : 'No detailed data available'
+             }`,
+                )
+                .openPopup();
 
-        if (data) updateFooterStats(data.income, data.home, data.score);
-    })
-    .catch(() => {
-        alert('Zip code not found. Please enter a valid 5-digit US zip code.');
-    });
+            if (data) updateFooterStats(data.income, data.home, data.score);
+        })
+        .catch((err) => {
+            console.error('Error fetching zip code data:', err);
+            alert('There was a problem calculating for that zip code. Please ensure it is valid and try again.');
+        });
 }
 
 // ===========================================
@@ -255,7 +293,7 @@ function searchByState(abbr) {
     updateFooterStats(data.income, data.home, data.score);
 
     clearSelectedState();
-    geojsonLayer.eachLayer(layer => {
+    geojsonLayer.eachLayer((layer) => {
         if (layer.feature.properties.name === stateName) {
             map.fitBounds(layer.getBounds());
             layer.setStyle({ weight: 4, color: '#0d47a1', fillColor: '#1a73e8', fillOpacity: 0.6 });
@@ -281,3 +319,35 @@ document.getElementById('searchBtn').addEventListener('click', function () {
         alert('Please enter a valid 5-digit zip code or 2-letter state abbreviation.');
     }
 });
+
+// ===========================================
+// 8. Budget Search
+// ===========================================
+
+function searchByMontlyBudget(budget) {
+    if (!budget || isNaN(budget)) {
+        console.error(`Invalid budget provided: ${budget}`);
+        alert(`Invalid budget provided`);
+        return;
+    }
+
+    censusApi
+        .getTopTenHousingLocationsByMonthlyBudget(budget)
+        .then((results) => {
+            console.debug(`Received ${results.length} results for budget search:`, results);
+            if (results.length === 0) {
+                alert('No locations found within that budget.');
+                return;
+            }
+
+            const resultsList = results.map((entry) => {
+                return { zip: entry.zip, housingCost: formatCurrency(entry.housingCost) };
+            });
+            console.debug('Formatted budget search results:', resultsList);
+            // TODO: we need to figure out how to display these results in the UI
+        })
+        .catch((err) => {
+            console.error('Error fetching budget search results:', err);
+            alert('An error occurred while searching for locations within your budget. Please try again later.');
+        });
+}
