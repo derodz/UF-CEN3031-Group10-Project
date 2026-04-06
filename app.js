@@ -82,6 +82,21 @@ function updateFooterStats(income, home, score) {
     document.getElementById('score').textContent = score + '/100';
 }
 
+/**
+ *
+ * @param {{ zipOrState: string, score: number}} entry
+ */
+function addToHistory(entry) {
+    const historyList = document.getElementById('history');
+    const firstItem = historyList.firstChild;
+    const newItem = document.createElement('li');
+    newItem.textContent = `${entry.zipOrState}: ${entry.score}/100`;
+    historyList.insertBefore(newItem, firstItem);
+    if (historyList.children.length > 10) {
+        historyList.removeChild(historyList.lastChild);
+    }
+}
+
 // ===========================================
 // 4. State Layer (styling, hover, popups)
 // ===========================================
@@ -264,6 +279,8 @@ function searchByZip(zip) {
                 .openPopup();
 
             if (data) updateFooterStats(data.income, data.home, data.score);
+
+            addToHistory({ zipOrState: zip, score: data.score });
         })
         .catch((err) => {
             console.error('Error fetching zip code data:', err);
@@ -288,6 +305,8 @@ function searchByState(abbr) {
             map.fitBounds(layer.getBounds());
         }
     });
+
+    addToHistory({ zipOrState: abbr, score: data.score });
 }
 
 // ===========================================
