@@ -6,7 +6,7 @@ const map = L.map('map').setView([39.8283, -98.5795], 4);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
-    attribution: '© OpenStreetMap',
+    attribution: '© OpenStreetMap'
 }).addTo(map);
 
 // ===========================================
@@ -16,26 +16,26 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 import * as censusApi from './api/censusData.mjs';
 
 const stateData = {
-    Florida: { score: 65, income: 52000, home: 350000 },
-    Texas: { score: 72, income: 58000, home: 290000 },
-    California: { score: 28, income: 75000, home: 750000 },
-    'New York': { score: 35, income: 68000, home: 550000 },
-    Ohio: { score: 78, income: 48000, home: 180000 },
-    Georgia: { score: 68, income: 54000, home: 310000 },
+    'Florida':        { score: 65, income: 52000, home: 350000 },
+    'Texas':          { score: 72, income: 58000, home: 290000 },
+    'California':     { score: 28, income: 75000, home: 750000 },
+    'New York':       { score: 35, income: 68000, home: 550000 },
+    'Ohio':           { score: 78, income: 48000, home: 180000 },
+    'Georgia':        { score: 68, income: 54000, home: 310000 },
     'North Carolina': { score: 70, income: 51000, home: 280000 },
-    Arizona: { score: 55, income: 52000, home: 400000 },
-    Washington: { score: 42, income: 72000, home: 580000 },
-    Colorado: { score: 48, income: 68000, home: 520000 },
-    Michigan: { score: 74, income: 50000, home: 220000 },
-    Pennsylvania: { score: 62, income: 55000, home: 280000 },
-    Illinois: { score: 58, income: 60000, home: 320000 },
-    Virginia: { score: 52, income: 65000, home: 400000 },
-    Nevada: { score: 45, income: 54000, home: 420000 },
-    Oregon: { score: 40, income: 58000, home: 480000 },
-    Tennessee: { score: 71, income: 49000, home: 260000 },
-    Indiana: { score: 76, income: 47000, home: 190000 },
-    Missouri: { score: 75, income: 48000, home: 200000 },
-    Alabama: { score: 77, income: 44000, home: 170000 },
+    'Arizona':        { score: 55, income: 52000, home: 400000 },
+    'Washington':     { score: 42, income: 72000, home: 580000 },
+    'Colorado':       { score: 48, income: 68000, home: 520000 },
+    'Michigan':       { score: 74, income: 50000, home: 220000 },
+    'Pennsylvania':   { score: 62, income: 55000, home: 280000 },
+    'Illinois':       { score: 58, income: 60000, home: 320000 },
+    'Virginia':       { score: 52, income: 65000, home: 400000 },
+    'Nevada':         { score: 45, income: 54000, home: 420000 },
+    'Oregon':         { score: 40, income: 58000, home: 480000 },
+    'Tennessee':      { score: 71, income: 49000, home: 260000 },
+    'Indiana':        { score: 76, income: 47000, home: 190000 },
+    'Missouri':       { score: 75, income: 48000, home: 200000 },
+    'Alabama':        { score: 77, income: 44000, home: 170000 }
 };
 
 const stateNames = {
@@ -103,6 +103,7 @@ function addToHistory(entry) {
 
 let geojsonLayer;
 let decoloredState = null;
+let selectedState = null;
 
 function stateStyle(feature) {
     const stateName = feature.properties.name;
@@ -114,20 +115,27 @@ function stateStyle(feature) {
         weight: 1,
         opacity: 1,
         color: '#fff',
-        fillOpacity: 0.7,
+        fillOpacity: 0.7
     };
 }
 
 function highlightFeature(e) {
-    if (e.target === decoloredState) return;
+    if (e.target === decoloredState || e.target === selectedState) return;
     e.target.setStyle({ weight: 3, color: '#333', fillOpacity: 0.9 });
     e.target.bringToFront();
 }
 
 function resetHighlight(e) {
-    if (e.target === decoloredState) return;
+    if (e.target === decoloredState || e.target === selectedState) return;
     e.target.setStyle({ weight: 1, color: '#fff', fillOpacity: 0.7 });
     e.target.bringToFront();
+}
+
+function clearSelectedState() {
+    if (selectedState) {
+        selectedState.setStyle(stateStyle(selectedState.feature));
+        selectedState = null;
+    }
 }
 
 function onEachFeature(feature, layer) {
@@ -189,6 +197,7 @@ function clearZipHighlight() {
         decoloredState.setStyle(stateStyle(decoloredState.feature));
         decoloredState = null;
     }
+    clearSelectedState();
 }
 
 function fetchZipBoundary(zip) {
@@ -300,9 +309,13 @@ function searchByState(abbr) {
     const data = stateData[stateName];
     updateFooterStats(data.income, data.home, data.score);
 
+    clearSelectedState();
     geojsonLayer.eachLayer((layer) => {
         if (layer.feature.properties.name === stateName) {
             map.fitBounds(layer.getBounds());
+            layer.setStyle({ weight: 4, color: '#0d47a1', fillColor: '#1a73e8', fillOpacity: 0.6 });
+            layer.bringToFront();
+            selectedState = layer;
         }
     });
 
