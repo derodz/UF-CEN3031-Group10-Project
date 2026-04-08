@@ -125,3 +125,10 @@ main {
     float: left;
     background-color: #fff;
 }
+
+.compare-window {
+    top: 15%;
+    position: relative;
+    float: right;
+    background-color: #fff;
+}

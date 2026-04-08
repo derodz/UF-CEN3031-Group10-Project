@@ -82,11 +82,16 @@ function updateFooterStats(income, home, score) {
     document.getElementById('score').textContent = score + '/100';
 }
 
+//Keep track of history
+const stateHistoryArray = [];
 /**
  *
  * @param {{ zipOrState: string, score: number}} entry
  */
 function addToHistory(entry) {
+    //add to list as well
+    stateHistoryArray.push(entry.score);
+
     const historyList = document.getElementById('history');
     const firstItem = historyList.firstChild;
     const newItem = document.createElement('li');
@@ -95,6 +100,25 @@ function addToHistory(entry) {
     if (historyList.children.length > 10) {
         historyList.removeChild(historyList.lastChild);
     }
+}
+
+function compareHistoryEntries(score) {
+    //compare score to the history and return a string indicating how it ranks
+    const compareWindow = document.getElementById('compare-window');
+    compareWindow.style.display = 'block';
+    //compare to previous scores in stateHistoryArray() and show an arrow indicating if it's better, worse, or the same
+    if (stateHistoryArray.length > 0) {
+        if (score > stateHistoryArray[stateHistoryArray.length - 1]) {
+            document.getElementById('cmp-score-label').innerHTML = '↑';
+        }
+        else if (score < stateHistoryArray[stateHistoryArray.length - 1]) {
+            document.getElementById('cmp-score-label').innerHTML = '↓';
+        }
+        else {
+            document.getElementById('cmp-score-label').innerHTML = '→';
+        }
+    }
+    
 }
 
 // ===========================================
@@ -288,6 +312,7 @@ function searchByZip(zip) {
                 .openPopup();
 
             if (data) updateFooterStats(data.income, data.home, data.score);
+            if (data) compareHistoryEntries(data.score);
 
             addToHistory({ zipOrState: zip, score: data.score });
         })
@@ -308,6 +333,7 @@ function searchByState(abbr) {
     clearZipHighlight();
     const data = stateData[stateName];
     updateFooterStats(data.income, data.home, data.score);
+    compareHistoryEntries(data.score);
 
     clearSelectedState();
     geojsonLayer.eachLayer((layer) => {
