@@ -104,7 +104,7 @@ function addToHistory(entry) {
 
 function compareHistoryEntries(score) {
     //compare score to the history and return a string indicating how it ranks
-    const compareWindow = document.getElementById('compare-window');
+    const compareWindow = document.getElementById('comparewindow');
     compareWindow.style.display = 'block';
     //compare to previous scores in stateHistoryArray() and show an arrow indicating if it's better, worse, or the same
     if (stateHistoryArray.length > 0) {
@@ -118,7 +118,6 @@ function compareHistoryEntries(score) {
             document.getElementById('cmp-score-label').innerHTML = '→';
         }
     }
-    
 }
 
 // ===========================================
