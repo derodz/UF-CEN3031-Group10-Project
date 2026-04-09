@@ -5,7 +5,7 @@
 const medianIncomeDataSource = 'https://api.census.gov/data/2024/acs/acs5?get=group(B19121)&ucgid=860Z200US{{0}}';
 const monthlyMedianHousingCostDataSource = 'https://api.census.gov/data/2024/acs/acs5?get=group(B25105)&ucgid=860Z200US{{0}}';
 const allMonthlyMedianHousinCostDataSource = 'https://api.census.gov/data/2024/acs/acs5?get=group(B25105)&ucgid=pseudo(0100000US$8600000)';
-
+const occupancyDemographicsDataSource = 'https://api.census.gov/data/2024/acs/acs5?get=group(B25003)&ucgid=860Z200US{{0}}';
 /**
  * Get data from the Census API for a specific zip code and return it as an object with header keys and data values
  * @param {string} url
@@ -92,12 +92,16 @@ export const getSupplyAndDemandDataByZip = async (zip) => {
 };
 
 /**
- * TODO: We still don't have data for this (Sprint 2)
+ * Investory Activity is calculated as the percentage of renter-occupied housing units in the given zip code
  * @param {number} zip
  */
 export const getInvestorActivityDataByZip = async (zip) => {
-    // TODO: We still don't have data for this (Sprint 2)
-    // TODO: Implement this function to retrieve investor activity data for the given zip code
+    console.debug(`Requesting investor activity for zip code ${zip}...`);
+    const occupancyDemographicsData = await getCensusApiData(occupancyDemographicsDataSource, zip);
+    console.debug(`Retrieved occupancy demographics data for zip code ${zip}:`, occupancyDemographicsData);
+    const renterPercentage = (Number(occupancyDemographicsData['B25003_003E']) / Number(occupancyDemographicsData['B25003_001E'])) * 100;
+    console.debug(`Calculated renter percentage for zip code ${zip}: ${renterPercentage}%`);
+    return Number(renterPercentage.toFixed(2));
 };
 
 /**
