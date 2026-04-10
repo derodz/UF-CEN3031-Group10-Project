@@ -83,41 +83,54 @@ function updateFooterStats(income, home, score) {
 }
 
 //Keep track of history
-const stateHistoryArray = [];
+const historyEntries = [];
+/**
+ * Returns an arrow comparing entryScore to currentScore.
+ * ↑ if entryScore is higher, ↓ if lower, = if equal.
+ * @param {number} entryScore, @param {number} currentScore, @returns {string}
+ */
+function getArrow(entryScore, currentScore) {
+    if (entryScore > currentScore) return '↑';
+    if (entryScore < currentScore) return '↓';
+    return '=';
+}
+/**
+ * Re-renders the full history list, comparing each entry against currentScore.
+ * @param {number} currentScore
+ */
+function renderHistory(currentScore) {
+    const historyList = document.getElementById('history');
+    historyList.innerHTML = '';
+    historyEntries.forEach((entry, index) => {
+        const li = document.createElement('li');
+        if (index === 0) {
+            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${entry.score}/100</span>`;
+        } else {
+            const symbol = getArrow(entry.score, currentScore);
+            const cls = symbol === '↑' ? 'up' : symbol === '↓' ? 'down' : 'equal';
+            li.innerHTML = `<span class="history-arrow ${cls}">${symbol}</span><span class="history-label">${entry.zipOrState}: ${entry.score}/100</span>`;
+        }
+        historyList.appendChild(li);
+    });
+}
 /**
  *
  * @param {{ zipOrState: string, score: number}} entry
  */
 function addToHistory(entry) {
-    //add to list as well
-    stateHistoryArray.push(entry.score);
-
     const historyList = document.getElementById('history');
     const firstItem = historyList.firstChild;
     const newItem = document.createElement('li');
-    newItem.textContent = `${entry.zipOrState}: ${entry.score}/100`;
+    newItem.textContent = `${entry.zipOrState}: ${entry.score}`;
     historyList.insertBefore(newItem, firstItem);
     if (historyList.children.length > 10) {
         historyList.removeChild(historyList.lastChild);
     }
-}
 
-function compareHistoryEntries(score) {
-    //compare score to the history and return a string indicating how it ranks
-    const compareWindow = document.getElementById('comparewindow');
-    compareWindow.style.display = 'block';
-    //compare to previous scores in stateHistoryArray() and show an arrow indicating if it's better, worse, or the same
-    if (stateHistoryArray.length > 0) {
-        if (score > stateHistoryArray[stateHistoryArray.length - 1]) {
-            document.getElementById('cmp-score-label').innerHTML = '↑';
-        }
-        else if (score < stateHistoryArray[stateHistoryArray.length - 1]) {
-            document.getElementById('cmp-score-label').innerHTML = '↓';
-        }
-        else {
-            document.getElementById('cmp-score-label').innerHTML = '→';
-        }
-    }
+    // Keep in internally array for use with arrows
+    historyEntries.unshift(entry);
+    if (historyEntries.length > 10) historyEntries.pop();
+    renderHistory(entry.score);
 }
 
 // ===========================================
@@ -311,7 +324,6 @@ function searchByZip(zip) {
                 .openPopup();
 
             if (data) updateFooterStats(data.income, data.home, data.score);
-            if (data) compareHistoryEntries(data.score);
 
             addToHistory({ zipOrState: zip, score: data.score });
         })
@@ -332,7 +344,6 @@ function searchByState(abbr) {
     clearZipHighlight();
     const data = stateData[stateName];
     updateFooterStats(data.income, data.home, data.score);
-    compareHistoryEntries(data.score);
 
     clearSelectedState();
     geojsonLayer.eachLayer((layer) => {
