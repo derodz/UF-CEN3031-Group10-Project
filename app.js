@@ -94,21 +94,42 @@ function getArrow(entryScore, currentScore) {
     if (entryScore < currentScore) return '↓';
     return '=';
 }
+
+/**
+ * Get the letter grade for a given score.
+ */
+function getLetterGrade(score) {
+    if (score >= 96) return 'A+';
+    if (score >= 93) return 'A';
+    if (score >= 89) return 'A-';
+    if (score >= 86) return 'B+';
+    if (score >= 83) return 'B';
+    if (score >= 79) return 'B-';
+    if (score >= 76) return 'C+';
+    if (score >= 73) return 'C';
+    if (score >= 69) return 'C-';
+    if (score >= 66) return 'D+';
+    if (score >= 63) return 'D';
+    if (score >= 59) return 'D-';
+    return 'F';
+}
+
 /**
  * Re-renders the full history list, comparing each entry against currentScore.
  * @param {number} currentScore
  */
 function renderHistory(currentScore) {
+    const grade = getLetterGrade(currentScore);
     const historyList = document.getElementById('history');
     historyList.innerHTML = '';
     historyEntries.forEach((entry, index) => {
         const li = document.createElement('li');
         if (index === 0) {
-            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${entry.score}/100</span>`;
+            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${grade}</span>`;
         } else {
             const symbol = getArrow(entry.score, currentScore);
             const cls = symbol === '↑' ? 'up' : symbol === '↓' ? 'down' : 'equal';
-            li.innerHTML = `<span class="history-arrow ${cls}">${symbol}</span><span class="history-label">${entry.zipOrState}: ${entry.score}/100</span>`;
+            li.innerHTML = `<span class="history-arrow ${cls}">${symbol}</span><span class="history-label">${entry.zipOrState}: ${getLetterGrade(entry.score)}</span>`;
         }
         historyList.appendChild(li);
     });
