@@ -148,7 +148,7 @@ function addToHistory(entry) {
         historyList.removeChild(historyList.lastChild);
     }
 
-    // Keep in internally array for use with arrows
+    // Keep in internal array for use with arrows
     historyEntries.unshift(entry);
     if (historyEntries.length > 10) historyEntries.pop();
     renderHistory(entry.score);
@@ -336,7 +336,7 @@ function searchByZip(zip) {
                     `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
              ${
                  data
-                     ? `Score: ${data.score}/100<br>
+                     ? `Score: ${getLetterGrade(data.score)}<br>
                     Avg Income: ${formatCurrency(data.income)}<br>
                     Avg Home: ${formatCurrency(data.home)}`
                      : 'No detailed data available'
@@ -373,6 +373,8 @@ function searchByState(abbr) {
             layer.setStyle({ weight: 4, color: '#0d47a1', fillColor: '#1a73e8', fillOpacity: 0.6 });
             layer.bringToFront();
             selectedState = layer;
+            //open popup for state when zooming in
+            layer.openPopup();
         }
     });
 
