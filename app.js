@@ -79,7 +79,7 @@ function formatCurrency(num) {
 function updateFooterStats(income, home, score) {
     document.getElementById('avgIncome').textContent = formatCurrency(income);
     document.getElementById('avgHome').textContent = formatCurrency(home);
-    document.getElementById('score').textContent = score + '/100';
+    document.getElementById('score').textContent = score;
 }
 
 //Keep track of history
@@ -204,7 +204,7 @@ function onEachFeature(feature, layer) {
         mouseout: resetHighlight,
         click: function () {
             map.fitBounds(layer.getBounds());
-            if (data) updateFooterStats(data.income, data.home, data.score);
+            if (data) updateFooterStats(data.income, data.home, getLetterGrade(data.score));
         },
     });
 
@@ -344,7 +344,7 @@ function searchByZip(zip) {
                 )
                 .openPopup();
 
-            if (data) updateFooterStats(data.income, data.home, data.score);
+            if (data) updateFooterStats(data.income, data.home, getLetterGrade(data.score));
 
             addToHistory({ zipOrState: zip, score: data.score });
         })
@@ -364,7 +364,7 @@ function searchByState(abbr) {
 
     clearZipHighlight();
     const data = stateData[stateName];
-    updateFooterStats(data.income, data.home, data.score);
+    updateFooterStats(data.income, data.home, getLetterGrade(data.score));
 
     clearSelectedState();
     geojsonLayer.eachLayer((layer) => {
