@@ -211,7 +211,7 @@ function onEachFeature(feature, layer) {
     if (data) {
         layer.bindPopup(
             `<strong>${stateName}</strong><br>
-             Score: ${data.score}/100<br>
+             Score: ${getLetterGrade(data.score)}<br>
              Avg Income: ${formatCurrency(data.income)}<br>
              Avg Home: ${formatCurrency(data.home)}`,
         );
