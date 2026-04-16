@@ -79,7 +79,7 @@ function formatCurrency(num) {
 function updateFooterStats(income, home, score) {
     document.getElementById('avgIncome').textContent = formatCurrency(income);
     document.getElementById('avgHome').textContent = formatCurrency(home);
-    document.getElementById('score').textContent = score + '/100';
+    document.getElementById('score').textContent = score;
 }
 
 //Keep track of history
@@ -94,21 +94,42 @@ function getArrow(entryScore, currentScore) {
     if (entryScore < currentScore) return '↓';
     return '=';
 }
+
+/**
+ * Get the letter grade for a given score.
+ */
+function getLetterGrade(score) {
+    if (score >= 96) return 'A+';
+    if (score >= 93) return 'A';
+    if (score >= 89) return 'A-';
+    if (score >= 86) return 'B+';
+    if (score >= 83) return 'B';
+    if (score >= 79) return 'B-';
+    if (score >= 76) return 'C+';
+    if (score >= 73) return 'C';
+    if (score >= 69) return 'C-';
+    if (score >= 66) return 'D+';
+    if (score >= 63) return 'D';
+    if (score >= 59) return 'D-';
+    return 'F';
+}
+
 /**
  * Re-renders the full history list, comparing each entry against currentScore.
  * @param {number} currentScore
  */
 function renderHistory(currentScore) {
+    const grade = getLetterGrade(currentScore);
     const historyList = document.getElementById('history');
     historyList.innerHTML = '';
     historyEntries.forEach((entry, index) => {
         const li = document.createElement('li');
         if (index === 0) {
-            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${entry.score}/100</span>`;
+            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${grade}</span>`;
         } else {
             const symbol = getArrow(entry.score, currentScore);
             const cls = symbol === '↑' ? 'up' : symbol === '↓' ? 'down' : 'equal';
-            li.innerHTML = `<span class="history-arrow ${cls}">${symbol}</span><span class="history-label">${entry.zipOrState}: ${entry.score}/100</span>`;
+            li.innerHTML = `<span class="history-arrow ${cls}">${symbol}</span><span class="history-label">${entry.zipOrState}: ${getLetterGrade(entry.score)}</span>`;
         }
         historyList.appendChild(li);
     });
@@ -127,7 +148,7 @@ function addToHistory(entry) {
         historyList.removeChild(historyList.lastChild);
     }
 
-    // Keep in internally array for use with arrows
+    // Keep in internal array for use with arrows
     historyEntries.unshift(entry);
     if (historyEntries.length > 10) historyEntries.pop();
     renderHistory(entry.score);
@@ -183,14 +204,14 @@ function onEachFeature(feature, layer) {
         mouseout: resetHighlight,
         click: function () {
             map.fitBounds(layer.getBounds());
-            if (data) updateFooterStats(data.income, data.home, data.score);
+            if (data) updateFooterStats(data.income, data.home, getLetterGrade(data.score));
         },
     });
 
     if (data) {
         layer.bindPopup(
             `<strong>${stateName}</strong><br>
-             Score: ${data.score}/100<br>
+             Score: ${getLetterGrade(data.score)}<br>
              Avg Income: ${formatCurrency(data.income)}<br>
              Avg Home: ${formatCurrency(data.home)}`,
         );
@@ -315,7 +336,7 @@ function searchByZip(zip) {
                     `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
              ${
                  data
-                     ? `Score: ${data.score}/100<br>
+                     ? `Score: ${getLetterGrade(data.score)}<br>
                     Avg Income: ${formatCurrency(data.income)}<br>
                     Avg Home: ${formatCurrency(data.home)}`
                      : 'No detailed data available'
@@ -323,7 +344,7 @@ function searchByZip(zip) {
                 )
                 .openPopup();
 
-            if (data) updateFooterStats(data.income, data.home, data.score);
+            if (data) updateFooterStats(data.income, data.home, getLetterGrade(data.score));
 
             addToHistory({ zipOrState: zip, score: data.score });
         })
@@ -343,7 +364,7 @@ function searchByState(abbr) {
 
     clearZipHighlight();
     const data = stateData[stateName];
-    updateFooterStats(data.income, data.home, data.score);
+    updateFooterStats(data.income, data.home, getLetterGrade(data.score));
 
     clearSelectedState();
     geojsonLayer.eachLayer((layer) => {
@@ -352,6 +373,8 @@ function searchByState(abbr) {
             layer.setStyle({ weight: 4, color: '#0d47a1', fillColor: '#1a73e8', fillOpacity: 0.6 });
             layer.bringToFront();
             selectedState = layer;
+            //open popup for state when zooming in
+            layer.openPopup();
         }
     });
 
