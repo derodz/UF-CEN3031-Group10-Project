@@ -64,7 +64,23 @@ function formatCurrency(num) {
 function updateFooterStats(income, home, score) {
     document.getElementById('avgIncome').textContent = formatCurrency(income);
     document.getElementById('avgHome').textContent = formatCurrency(home);
-    document.getElementById('score').textContent = score + '/100';
+    document.getElementById('score').textContent = getLetterGrade(score);
+}
+
+function getLetterGrade(score) {
+    if (score >= 96) return 'A+';
+    if (score >= 93) return 'A';
+    if (score >= 89) return 'A-';
+    if (score >= 86) return 'B+';
+    if (score >= 83) return 'B';
+    if (score >= 79) return 'B-';
+    if (score >= 76) return 'C+';
+    if (score >= 73) return 'C';
+    if (score >= 69) return 'C-';
+    if (score >= 66) return 'D+';
+    if (score >= 63) return 'D';
+    if (score >= 59) return 'D-';
+    return 'F';
 }
 
 function getRiskLevel(score) {
@@ -99,11 +115,11 @@ function renderHistory(currentScore) {
     historyEntries.forEach((entry, i) => {
         const li = document.createElement('li');
         if (i === 0) {
-            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${entry.score}/100</span>`;
+            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${getLetterGrade(entry.score)}</span>`;
         } else {
             const arrow = getArrow(entry.score, currentScore);
             const cls = arrow === '↑' ? 'up' : arrow === '↓' ? 'down' : 'equal';
-            li.innerHTML = `<span class="history-arrow ${cls}">${arrow}</span><span class="history-label">${entry.zipOrState}: ${entry.score}/100</span>`;
+            li.innerHTML = `<span class="history-arrow ${cls}">${arrow}</span><span class="history-label">${entry.zipOrState}: ${getLetterGrade(entry.score)}</span>`;
         }
         list.appendChild(li);
     });
@@ -170,7 +186,7 @@ function onEachFeature(feature, layer) {
     if (data) {
         layer.bindPopup(
             `<strong>${name}</strong><br>
-             Score: ${data.score}/100<br>
+             Score: ${getLetterGrade(data.score)}<br>
              Median Income: ${formatCurrency(data.income)}<br>
              Annual Housing Cost: ${formatCurrency(data.home)}`
         );
@@ -271,7 +287,7 @@ function searchByZip(zip) {
         zipMarker = L.marker(markerPos).addTo(map);
         zipMarker.bindPopup(
             `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
-             Score: ${score}/100<br>
+             Score: ${getLetterGrade(score)}<br>
              Median Income: ${formatCurrency(income)}<br>
              Annual Housing Cost: ${formatCurrency(annualCost)}`
         ).openPopup();
