@@ -6,6 +6,7 @@
         <title>Affordable Housing Finder</title>
         <link rel="stylesheet" href="styles.css" />
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
     <body>
         <header>
@@ -18,6 +19,12 @@
                 <input type="text" id="zipcode" placeholder="Enter ZIP Code" maxlength="5" />
                 <input type="text" id="state" placeholder="Enter State (e.g. NY)" maxlength="2" />
                 <button id="searchBtn">Search</button>
+
+                <h3>Budget Search</h3>
+                <input type="number" id="budgetInput" placeholder="Monthly budget (e.g. 1500)" min="0" />
+                <input type="text" id="budgetState" placeholder="State (e.g. FL) — optional" maxlength="2" />
+                <button id="budgetBtn">Find Affordable Areas</button>
+
                 <h3>Filters</h3>
                 <select id="income">
                     <option>Any Income</option>
@@ -37,27 +44,22 @@
                     <option>Medium Risk</option>
                     <option>High Risk</option>
                 </select>
-                <select id="propertyType">
-                    <option>Any Property Type</option>
-                    <option>Single Family</option>
-                    <option>Condo</option>
-                    <option>Townhouse</option>
-                    <option>Multi-Family</option>
+                <select id="affordabilityScore">
+                    <option>Any Affordability</option>
+                    <option>Very Affordable</option>
+                    <option>Moderately Affordable</option>
+                    <option>Less Affordable</option>
+                    <option>Not Affordable</option>
                 </select>
-                <select id="bedrooms">
-                    <option>Any Bedrooms</option>
-                    <option>1+</option>
-                    <option>2+</option>
-                    <option>3+</option>
-                    <option>4+</option>
-                </select>
+
                 <h3>History</h3>
-                <ul id="history">
-                </ul>
+                <ul id="history"></ul>
+
                 <div class="info">
                     <p>The Affordability Score is calculated based on median income, median monthly housing costs, and the percent of income spent on housing for a given area. The percentage is then ranked on a scale of 0 to 100.</p>
                 </div>
             </aside>
+
             <section class="map">
                 <div id="map"></div>
                 <div class="legend">
@@ -67,15 +69,13 @@
                 </div>
             </section>
 
-        </aside>
-        <section class="sidebar">
-            <h2>Unemployment Details</h2>
-            <div id="details">
-            </div>
-        </section>
-    </main>
+            <aside class="info-panel">
+                <h2>Area Details</h2>
+                <div id="details">
+                    <p class="placeholder">Search a ZIP code to see details.</p>
+                </div>
+            </aside>
         </main>
-
 
         <footer class="results">
             <div class="stat">
@@ -83,12 +83,12 @@
                 <strong id="avgIncome">$45k</strong>
             </div>
             <div class="stat">
-                <span>Avg Home</span>
+                <span>Annual Housing Cost</span>
                 <strong id="avgHome">$280k</strong>
             </div>
             <div class="stat">
                 <span>Score</span>
-                <strong id="score">C</strong>
+                <strong id="score">72/100</strong>
             </div>
         </footer>
 

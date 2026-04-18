@@ -1,3 +1,5 @@
+import * as censusApi from './api/censusData.mjs';
+
 // ===========================================
 // 1. Map Setup
 // ===========================================
@@ -10,10 +12,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // ===========================================
-// 2. Data
+// 2. State Data (hardcoded for state-level view)
 // ===========================================
-
-import * as censusApi from './api/censusData.mjs';
 
 const stateData = {
     'Florida':        { score: 65, income: 52000, home: 350000 },
@@ -39,26 +39,11 @@ const stateData = {
 };
 
 const stateNames = {
-    FL: 'Florida',
-    TX: 'Texas',
-    CA: 'California',
-    NY: 'New York',
-    OH: 'Ohio',
-    GA: 'Georgia',
-    NC: 'North Carolina',
-    AZ: 'Arizona',
-    WA: 'Washington',
-    CO: 'Colorado',
-    MI: 'Michigan',
-    PA: 'Pennsylvania',
-    IL: 'Illinois',
-    VA: 'Virginia',
-    NV: 'Nevada',
-    OR: 'Oregon',
-    TN: 'Tennessee',
-    IN: 'Indiana',
-    MO: 'Missouri',
-    AL: 'Alabama',
+    FL: 'Florida', TX: 'Texas', CA: 'California', NY: 'New York',
+    OH: 'Ohio', GA: 'Georgia', NC: 'North Carolina', AZ: 'Arizona',
+    WA: 'Washington', CO: 'Colorado', MI: 'Michigan', PA: 'Pennsylvania',
+    IL: 'Illinois', VA: 'Virginia', NV: 'Nevada', OR: 'Oregon',
+    TN: 'Tennessee', IN: 'Indiana', MO: 'Missouri', AL: 'Alabama',
 };
 
 // ===========================================
@@ -79,25 +64,9 @@ function formatCurrency(num) {
 function updateFooterStats(income, home, score) {
     document.getElementById('avgIncome').textContent = formatCurrency(income);
     document.getElementById('avgHome').textContent = formatCurrency(home);
-    document.getElementById('score').textContent = score;
+    document.getElementById('score').textContent = getLetterGrade(score);
 }
 
-//Keep track of history
-const historyEntries = [];
-/**
- * Returns an arrow comparing entryScore to currentScore.
- * ↑ if entryScore is higher, ↓ if lower, = if equal.
- * @param {number} entryScore, @param {number} currentScore, @returns {string}
- */
-function getArrow(entryScore, currentScore) {
-    if (entryScore > currentScore) return '↑';
-    if (entryScore < currentScore) return '↓';
-    return '=';
-}
-
-/**
- * Get the letter grade for a given score.
- */
 function getLetterGrade(score) {
     if (score >= 96) return 'A+';
     if (score >= 93) return 'A';
@@ -114,48 +83,56 @@ function getLetterGrade(score) {
     return 'F';
 }
 
-/**
- * Re-renders the full history list, comparing each entry against currentScore.
- * @param {number} currentScore
- */
+function getRiskLevel(score) {
+    if (score >= 65) return { label: 'Low Risk', cls: 'low' };
+    if (score >= 45) return { label: 'Medium Risk', cls: 'medium' };
+    return { label: 'High Risk', cls: 'high' };
+}
+
+function calculateAffordabilityScore(annualIncome, annualHousingCost) {
+    const housingPercent = (annualHousingCost / annualIncome) * 100;
+    if (housingPercent <= 26.7) return 100;
+    if (housingPercent >= 60) return 0;
+    return 3 * (60 - housingPercent);
+}
+
+// ===========================================
+// 4. Search History
+// ===========================================
+
+const historyEntries = [];
+
+function getArrow(entryScore, currentScore) {
+    if (entryScore > currentScore) return '↑';
+    if (entryScore < currentScore) return '↓';
+    return '=';
+}
+
 function renderHistory(currentScore) {
-    const grade = getLetterGrade(currentScore);
-    const historyList = document.getElementById('history');
-    historyList.innerHTML = '';
-    historyEntries.forEach((entry, index) => {
+    const list = document.getElementById('history');
+    list.innerHTML = '';
+
+    historyEntries.forEach((entry, i) => {
         const li = document.createElement('li');
-        if (index === 0) {
-            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${grade}</span>`;
+        if (i === 0) {
+            li.innerHTML = `<span class="history-label">${entry.zipOrState}: ${getLetterGrade(entry.score)}</span>`;
         } else {
-            const symbol = getArrow(entry.score, currentScore);
-            const cls = symbol === '↑' ? 'up' : symbol === '↓' ? 'down' : 'equal';
-            li.innerHTML = `<span class="history-arrow ${cls}">${symbol}</span><span class="history-label">${entry.zipOrState}: ${getLetterGrade(entry.score)}</span>`;
+            const arrow = getArrow(entry.score, currentScore);
+            const cls = arrow === '↑' ? 'up' : arrow === '↓' ? 'down' : 'equal';
+            li.innerHTML = `<span class="history-arrow ${cls}">${arrow}</span><span class="history-label">${entry.zipOrState}: ${getLetterGrade(entry.score)}</span>`;
         }
-        historyList.appendChild(li);
+        list.appendChild(li);
     });
 }
-/**
- *
- * @param {{ zipOrState: string, score: number}} entry
- */
-function addToHistory(entry) {
-    const historyList = document.getElementById('history');
-    const firstItem = historyList.firstChild;
-    const newItem = document.createElement('li');
-    newItem.textContent = `${entry.zipOrState}: ${entry.score}`;
-    historyList.insertBefore(newItem, firstItem);
-    if (historyList.children.length > 10) {
-        historyList.removeChild(historyList.lastChild);
-    }
 
-    // Keep in internal array for use with arrows
+function addToHistory(entry) {
     historyEntries.unshift(entry);
     if (historyEntries.length > 10) historyEntries.pop();
     renderHistory(entry.score);
 }
 
 // ===========================================
-// 4. State Layer (styling, hover, popups)
+// 5. State Layer (map coloring, hover, popups)
 // ===========================================
 
 let geojsonLayer;
@@ -163,10 +140,8 @@ let decoloredState = null;
 let selectedState = null;
 
 function stateStyle(feature) {
-    const stateName = feature.properties.name;
-    const data = stateData[stateName];
+    const data = stateData[feature.properties.name];
     const score = data ? data.score : 50;
-
     return {
         fillColor: getColor(score),
         weight: 1,
@@ -196,34 +171,32 @@ function clearSelectedState() {
 }
 
 function onEachFeature(feature, layer) {
-    const stateName = feature.properties.name;
-    const data = stateData[stateName];
+    const name = feature.properties.name;
+    const data = stateData[name];
 
     layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight,
         click: function () {
             map.fitBounds(layer.getBounds());
-            if (data) updateFooterStats(data.income, data.home, getLetterGrade(data.score));
+            if (data) updateFooterStats(data.income, data.home, data.score);
         },
     });
 
     if (data) {
         layer.bindPopup(
-            `<strong>${stateName}</strong><br>
+            `<strong>${name}</strong><br>
              Score: ${getLetterGrade(data.score)}<br>
-             Avg Income: ${formatCurrency(data.income)}<br>
-             Avg Home: ${formatCurrency(data.home)}`,
+             Median Income: ${formatCurrency(data.income)}<br>
+             Annual Housing Cost: ${formatCurrency(data.home)}`
         );
     } else {
-        layer.bindPopup(`<strong>${stateName}</strong><br>No data available`);
+        layer.bindPopup(`<strong>${name}</strong><br>No data available`);
     }
 }
 
-const STATES_GEOJSON_URL = 'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json';
-
-fetch(STATES_GEOJSON_URL)
-    .then((response) => response.json())
+fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
+    .then((res) => res.json())
     .then((data) => {
         geojsonLayer = L.geoJson(data, {
             style: stateStyle,
@@ -232,7 +205,7 @@ fetch(STATES_GEOJSON_URL)
     });
 
 // ===========================================
-// 5. Zip Code Search
+// 6. Zip Code Search
 // ===========================================
 
 const ZIP_BOUNDARY_API = 'https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/georef-united-states-of-america-zcta5/records';
@@ -242,25 +215,16 @@ let zipMarker = null;
 let zipBoundaryLayer = null;
 
 function clearZipHighlight() {
-    if (zipMarker) {
-        map.removeLayer(zipMarker);
-        zipMarker = null;
-    }
-    if (zipBoundaryLayer) {
-        map.removeLayer(zipBoundaryLayer);
-        zipBoundaryLayer = null;
-    }
-    if (decoloredState) {
-        decoloredState.setStyle(stateStyle(decoloredState.feature));
-        decoloredState = null;
-    }
+    if (zipMarker) { map.removeLayer(zipMarker); zipMarker = null; }
+    if (zipBoundaryLayer) { map.removeLayer(zipBoundaryLayer); zipBoundaryLayer = null; }
+    if (decoloredState) { decoloredState.setStyle(stateStyle(decoloredState.feature)); decoloredState = null; }
     clearSelectedState();
 }
 
 function fetchZipBoundary(zip) {
     const url = `${ZIP_BOUNDARY_API}?where=zcta5_code%3D%22${zip}%22&select=geo_shape,zcta5_code&limit=1`;
     return fetch(url)
-        .then((response) => response.json())
+        .then((res) => res.json())
         .then((data) => {
             if (data.results && data.results.length > 0) return data.results[0].geo_shape;
             return null;
@@ -277,20 +241,6 @@ function decolorState(stateName) {
     });
 }
 
-//Affordability Score Calculation Logic
-function calculateAffordabilityScore(annualIncome, annualHousingCost) {
-    var affordability_score = 0;
-    var housing_price = annualHousingCost / annualIncome;
-    if (housing_price <= 26.7) {
-        affordability_score = 100;
-    } else if (housing_price >= 60) {
-        affordability_score = 0;
-    } else {
-        affordability_score = 3 * (60 - housing_price);
-    }
-    return affordability_score;
-}
-
 function searchByZip(zip) {
     Promise.all([
         fetch(`${ZIP_LOCATION_API}/${zip}`).then((r) => {
@@ -299,63 +249,60 @@ function searchByZip(zip) {
         }),
         fetchZipBoundary(zip),
     ])
-        .then(async ([locationData, boundary]) => {
-            const place = locationData.places[0];
-            const lat = parseFloat(place.latitude);
-            const lng = parseFloat(place.longitude);
-            const city = place['place name'];
-            const stateAbbr = place['state abbreviation'];
-            const stateName = stateNames[stateAbbr];
-            const income = await censusApi.getMedianIncomeByZip(zip);
-            const monthlyHousingCost = await censusApi.getMedianMonthlyHousingCostByZip(zip);
-            const medianPrice = monthlyHousingCost * 12;
-            const affordabilityScore = calculateAffordabilityScore(income, medianPrice);
-            const data = { score: affordabilityScore, income, home: medianPrice };
-            console.debug('fetched data for zip', income, monthlyHousingCost);
+    .then(async ([locationData, boundary]) => {
+        const place = locationData.places[0];
+        const lat = parseFloat(place.latitude);
+        const lng = parseFloat(place.longitude);
+        const city = place['place name'];
+        const stateAbbr = place['state abbreviation'];
+        const stateName = stateNames[stateAbbr];
 
-            clearZipHighlight();
-            decolorState(stateName);
+        const income = await censusApi.getMedianIncomeByZip(zip);
+        const monthlyHousingCost = await censusApi.getMedianMonthlyHousingCostByZip(zip);
 
-            // Draw zip code boundary polygon
-            if (boundary) {
-                zipBoundaryLayer = L.geoJson(boundary, {
-                    style: { color: '#0d47a1', weight: 4, fillColor: '#1a73e8', fillOpacity: 0.35 },
-                }).addTo(map);
-                zipBoundaryLayer.bringToFront();
-                map.fitBounds(zipBoundaryLayer.getBounds(), { padding: [20, 20] });
-            } else {
-                map.setView([lat, lng], 13);
-            }
+        if (income === null || monthlyHousingCost === null) {
+            alert('No Census data available for ZIP ' + zip + '. Try a residential ZIP code.');
+            return;
+        }
 
-            // Place marker at the true center of the boundary
-            const markerPos = zipBoundaryLayer ? zipBoundaryLayer.getBounds().getCenter() : L.latLng(lat, lng);
+        const annualCost = monthlyHousingCost * 12;
+        const score = Math.round(calculateAffordabilityScore(income, annualCost));
 
-            zipMarker = L.marker(markerPos).addTo(map);
-            zipMarker
-                .bindPopup(
-                    `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
-             ${
-                 data
-                     ? `Score: ${getLetterGrade(data.score)}<br>
-                    Avg Income: ${formatCurrency(data.income)}<br>
-                    Avg Home: ${formatCurrency(data.home)}`
-                     : 'No detailed data available'
-             }`,
-                )
-                .openPopup();
+        clearZipHighlight();
+        decolorState(stateName);
 
-            if (data) updateFooterStats(data.income, data.home, getLetterGrade(data.score));
+        // Draw zip boundary
+        if (boundary) {
+            zipBoundaryLayer = L.geoJson(boundary, {
+                style: { color: '#0d47a1', weight: 4, fillColor: '#1a73e8', fillOpacity: 0.35 },
+            }).addTo(map);
+            zipBoundaryLayer.bringToFront();
+            map.fitBounds(zipBoundaryLayer.getBounds(), { padding: [20, 20] });
+        } else {
+            map.setView([lat, lng], 13);
+        }
 
-            addToHistory({ zipOrState: zip, score: data.score });
-        })
-        .catch((err) => {
-            console.error('Error fetching zip code data:', err);
-            alert('There was a problem calculating for that zip code. Please ensure it is valid and try again.');
-        });
+        // Marker
+        const markerPos = zipBoundaryLayer ? zipBoundaryLayer.getBounds().getCenter() : L.latLng(lat, lng);
+        zipMarker = L.marker(markerPos).addTo(map);
+        zipMarker.bindPopup(
+            `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
+             Score: ${getLetterGrade(score)}<br>
+             Median Income: ${formatCurrency(income)}<br>
+             Annual Housing Cost: ${formatCurrency(annualCost)}`
+        ).openPopup();
+
+        updateFooterStats(income, annualCost, score);
+        addToHistory({ zipOrState: zip, score });
+        showInfoPanel(zip, score, income, annualCost);
+    })
+    .catch(() => {
+        alert('Could not load data for that ZIP code. Please check it and try again.');
+    });
 }
 
 // ===========================================
-// 6. State Search
+// 7. State Search
 // ===========================================
 
 function searchByState(abbr) {
@@ -364,7 +311,7 @@ function searchByState(abbr) {
 
     clearZipHighlight();
     const data = stateData[stateName];
-    updateFooterStats(data.income, data.home, getLetterGrade(data.score));
+    updateFooterStats(data.income, data.home, data.score);
 
     clearSelectedState();
     geojsonLayer.eachLayer((layer) => {
@@ -373,8 +320,6 @@ function searchByState(abbr) {
             layer.setStyle({ weight: 4, color: '#0d47a1', fillColor: '#1a73e8', fillOpacity: 0.6 });
             layer.bringToFront();
             selectedState = layer;
-            //open popup for state when zooming in
-            layer.openPopup();
         }
     });
 
@@ -382,10 +327,63 @@ function searchByState(abbr) {
 }
 
 // ===========================================
-// 7. Event Listeners
+// 8. Filters
 // ===========================================
 
-document.getElementById('searchBtn').addEventListener('click', function () {
+function stateMatchesFilters(data) {
+    if (!data) return true;
+
+    const incomeVal = document.getElementById('income').value;
+    const priceVal = document.getElementById('price').value;
+    const riskVal = document.getElementById('risk').value;
+    const affordVal = document.getElementById('affordabilityScore').value;
+
+    // Income filter
+    if (incomeVal === 'Under $50k' && data.income >= 50000) return false;
+    if (incomeVal === '$50k - $100k' && (data.income < 50000 || data.income >= 100000)) return false;
+    if (incomeVal === '$100k+' && data.income < 100000) return false;
+
+    // Price filter
+    if (priceVal === 'Under $200k' && data.home >= 200000) return false;
+    if (priceVal === '$200k - $400k' && (data.home < 200000 || data.home >= 400000)) return false;
+    if (priceVal === '$400k+' && data.home < 400000) return false;
+
+    // Risk filter (based on score thresholds)
+    if (riskVal === 'Low Risk' && data.score < 65) return false;
+    if (riskVal === 'Medium Risk' && (data.score < 45 || data.score >= 65)) return false;
+    if (riskVal === 'High Risk' && data.score >= 45) return false;
+
+    // Affordability filter
+    if (affordVal === 'Very Affordable' && data.score < 75) return false;
+    if (affordVal === 'Moderately Affordable' && (data.score < 55 || data.score >= 75)) return false;
+    if (affordVal === 'Less Affordable' && (data.score < 35 || data.score >= 55)) return false;
+    if (affordVal === 'Not Affordable' && data.score >= 35) return false;
+
+    return true;
+}
+
+function applyFilters() {
+    if (!geojsonLayer) return;
+    geojsonLayer.eachLayer((layer) => {
+        if (layer === decoloredState || layer === selectedState) return;
+        const data = stateData[layer.feature.properties.name];
+        if (stateMatchesFilters(data)) {
+            layer.setStyle(stateStyle(layer.feature));
+        } else {
+            layer.setStyle({ fillColor: '#ccc', fillOpacity: 0.4, weight: 1, color: '#fff' });
+        }
+    });
+}
+
+['income', 'price', 'risk', 'affordabilityScore'].forEach((id) => {
+    document.getElementById(id).addEventListener('change', applyFilters);
+});
+
+// ===========================================
+// 9. Search Button
+// ===========================================
+
+document.getElementById('searchBtn').addEventListener('click', () => {
     const zip = document.getElementById('zipcode').value.trim();
     const state = document.getElementById('state').value.trim();
 
@@ -399,33 +397,176 @@ document.getElementById('searchBtn').addEventListener('click', function () {
 });
 
 // ===========================================
-// 8. Budget Search
+// 10. Info Panel (ZIP details)
 // ===========================================
 
-function searchByMontlyBudget(budget) {
+let unemploymentChart = null;
+
+function drawUnemploymentChart(trend) {
+    const ctx = document.getElementById('unemploymentChart').getContext('2d');
+    if (unemploymentChart) unemploymentChart.destroy();
+
+    unemploymentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: trend.map((t) => String(t.year)),
+            datasets: [{
+                label: 'Unemployment Rate',
+                data: trend.map((t) => t.rate),
+                borderColor: '#1a73e8',
+                backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                tension: 0.3,
+                fill: true,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (item) => item.raw !== null ? item.raw + '% unemployment' : 'No data',
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Unemployment %', font: { size: 11 } },
+                    ticks: { callback: (val) => val + '%' },
+                },
+                x: {
+                    title: { display: true, text: 'Year', font: { size: 11 } },
+                },
+            },
+        },
+    });
+}
+
+async function showInfoPanel(zip, score, income, home) {
+    const details = document.getElementById('details');
+    const risk = getRiskLevel(score);
+
+    // Show what we already know immediately
+    details.innerHTML = `
+        <div class="info-row">
+            <span>Risk Level</span>
+            <span class="badge ${risk.cls}">${risk.label}</span>
+        </div>
+        <div class="info-row">
+            <span>Affordability Score</span>
+            <span>${score}/100</span>
+        </div>
+        <div class="info-row">
+            <span>Median Income</span>
+            <span>${formatCurrency(income)}</span>
+        </div>
+        <div class="info-row">
+            <span>Annual Housing Cost</span>
+            <span>${formatCurrency(home)}</span>
+        </div>
+        <div class="info-row">
+            <span>Unemployment Rate</span>
+            <span id="infoUnemployment">Loading...</span>
+        </div>
+        <div class="info-row">
+            <span>Buyers Market</span>
+            <span id="infoBuyersGrade">Loading...</span>
+        </div>
+        <div class="info-row">
+            <span>Renter Activity</span>
+            <span id="infoRenterActivity">Loading...</span>
+        </div>
+        <h3>Unemployment Trend</h3>
+        <canvas id="unemploymentChart"></canvas>
+    `;
+
+    // Fetch the rest in parallel
+    const [unemployment, supply, renters, trend] = await Promise.all([
+        censusApi.getUnemploymentDataByZip(zip),
+        censusApi.getSupplyAndDemandDataByZip(zip),
+        censusApi.getInvestorActivityDataByZip(zip),
+        censusApi.getUnemploymentTrendByZip(zip),
+    ]);
+
+    document.getElementById('infoUnemployment').textContent =
+        unemployment !== null ? unemployment + '%' : 'N/A';
+
+    document.getElementById('infoBuyersGrade').textContent =
+        supply.buyersMarketScore !== null
+            ? supply.buyersMarketScore + ' (' + supply.homeownershipVacancyRate + '% vacancy)'
+            : 'N/A';
+
+    document.getElementById('infoRenterActivity').textContent =
+        renters !== null ? renters + '% renters' : 'N/A';
+
+    drawUnemploymentChart(trend);
+}
+
+// ===========================================
+// 11. Budget Search
+// ===========================================
+
+async function searchByBudget(budget) {
     if (!budget || isNaN(budget)) {
-        console.error(`Invalid budget provided: ${budget}`);
-        alert(`Invalid budget provided`);
+        alert('Please enter a valid monthly budget.');
         return;
     }
 
-    censusApi
-        .getTopTenHousingLocationsByMonthlyBudget(budget)
-        .then((results) => {
-            console.debug(`Received ${results.length} results for budget search:`, results);
-            if (results.length === 0) {
-                alert('No locations found within that budget.');
-                return;
-            }
+    const state = document.getElementById('budgetState').value.trim() || null;
+    const details = document.getElementById('details');
+    details.innerHTML = '<p class="placeholder">Searching for affordable areas...</p>';
 
-            const resultsList = results.map((entry) => {
-                return { zip: entry.zip, housingCost: formatCurrency(entry.housingCost) };
-            });
-            console.debug('Formatted budget search results:', resultsList);
-            // TODO: we need to figure out how to display these results in the UI
+    const results = await censusApi.getTopTenHousingLocationsByMonthlyBudget(budget, state).catch(() => null);
+
+    if (!results || results.length === 0) {
+        details.innerHTML = '<p class="placeholder">No areas found within that budget.</p>';
+        return;
+    }
+
+    // Fetch city/state names for each zip
+    const enriched = await Promise.all(
+        results.map(async (entry) => {
+            try {
+                const res = await fetch(`${ZIP_LOCATION_API}/${entry.zip}`);
+                const data = await res.json();
+                const place = data.places[0];
+                return {
+                    zip: entry.zip,
+                    housingCost: entry.housingCost,
+                    city: place['place name'],
+                    state: place['state abbreviation'],
+                };
+            } catch {
+                return { zip: entry.zip, housingCost: entry.housingCost, city: 'Unknown', state: '' };
+            }
         })
-        .catch((err) => {
-            console.error('Error fetching budget search results:', err);
-            alert('An error occurred while searching for locations within your budget. Please try again later.');
+    );
+
+    details.innerHTML = `
+        <p class="budget-heading">Top areas under ${formatCurrency(budget)}/mo</p>
+        <ul class="budget-results">
+            ${enriched.map((e) => `
+                <li class="budget-item" data-zip="${e.zip}">
+                    <span class="budget-location">${e.city}, ${e.state} <small>${e.zip}</small></span>
+                    <span class="budget-cost">${formatCurrency(e.housingCost)}/mo</span>
+                </li>
+            `).join('')}
+        </ul>
+    `;
+
+    // Click a result to run full zip search
+    details.querySelectorAll('.budget-item').forEach((item) => {
+        item.addEventListener('click', () => {
+            document.getElementById('zipcode').value = item.dataset.zip;
+            searchByZip(item.dataset.zip);
         });
+    });
 }
+
+document.getElementById('budgetBtn').addEventListener('click', () => {
+    const budget = parseFloat(document.getElementById('budgetInput').value);
+    searchByBudget(budget);
+});

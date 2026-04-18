@@ -132,8 +132,103 @@ main {
 }
 
 .info {
-    top: 15%;
-    position: relative;
-    float: left;
-    background-color: #fff;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: #888;
+    line-height: 1.4;
+}
+
+.info-panel {
+    width: 260px;
+    background: #fff;
+    border-left: 1px solid #ddd;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.info-panel h2 {
+    font-size: 0.9rem;
+    color: #1a73e8;
+    margin-bottom: 1rem;
+}
+
+.info-panel h3 {
+    font-size: 0.8rem;
+    color: #555;
+    margin: 1rem 0 0.5rem;
+}
+
+.info-panel .placeholder {
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row span:first-child {
+    color: #666;
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.badge.low    { background: #34a853; }
+.badge.medium { background: #fbbc04; color: #333; }
+.badge.high   { background: #ea4335; }
+
+#unemploymentChart {
+    margin-top: 0.5rem;
+    max-height: 150px;
+}
+
+.budget-heading {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.budget-results {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.budget-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.4rem;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-radius: 4px;
+}
+
+.budget-item:hover {
+    background: #f0f5ff;
+}
+
+.budget-location small {
+    color: #aaa;
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+}
+
+.budget-cost {
+    color: #1a73e8;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.5rem;
 }
