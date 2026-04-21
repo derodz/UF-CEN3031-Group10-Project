@@ -25,39 +25,8 @@
                 <input type="text" id="budgetState" placeholder="State (e.g. FL) — optional" maxlength="2" />
                 <button id="budgetBtn">Find Affordable Areas</button>
 
-                <h3>Filters</h3>
-                <select id="income">
-                    <option>Any Income</option>
-                    <option>Under $50k</option>
-                    <option>$50k - $100k</option>
-                    <option>$100k+</option>
-                </select>
-                <select id="price">
-                    <option>Any Price</option>
-                    <option>Under $200k</option>
-                    <option>$200k - $400k</option>
-                    <option>$400k+</option>
-                </select>
-                <select id="risk">
-                    <option>Any Risk Level</option>
-                    <option>Low Risk</option>
-                    <option>Medium Risk</option>
-                    <option>High Risk</option>
-                </select>
-                <select id="affordabilityScore">
-                    <option>Any Affordability</option>
-                    <option>Very Affordable</option>
-                    <option>Moderately Affordable</option>
-                    <option>Less Affordable</option>
-                    <option>Not Affordable</option>
-                </select>
-
                 <h3>History</h3>
                 <ul id="history"></ul>
-
-                <div class="info">
-                    <p>The Affordability Score is calculated based on median income, median monthly housing costs, and the percent of income spent on housing for a given area. The percentage is then ranked on a scale of 0 to 100.</p>
-                </div>
             </aside>
 
             <section class="map">
@@ -70,6 +39,9 @@
             </section>
 
             <aside class="info-panel">
+                <div class="info">
+                    <p>The Affordability Score is calculated based on median income, median monthly housing costs, and the percent of income spent on housing for a given area. The final score is ranked with a letter grade from A+ (best) to F (worst).</p>
+                </div>
                 <h2>Area Details</h2>
                 <div id="details">
                     <p class="placeholder">Search a ZIP code to see details.</p>

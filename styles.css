@@ -78,18 +78,24 @@ main {
 .sidebar #history li {
     height: 25px;
     display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
 }
 .history-arrow {
-  font-weight: bold;
-  min-width: 1rem;
-  text-align: center;
+    font-weight: bold;
+    min-width: 1rem;
+    text-align: center;
 }
-.history-arrow.up   { color: #19db19; }
-.history-arrow.down { color: #d31515; }
-.history-arrow.equal   { color: #e2e238; }
+.history-arrow.up {
+    color: #19db19;
+}
+.history-arrow.down {
+    color: #d31515;
+}
+.history-arrow.equal {
+    color: #e2e238;
+}
 
 .map {
     flex: 1;
@@ -132,10 +138,12 @@ main {
 }
 
 .info {
-    margin-top: 1rem;
+    margin: 1rem 0 1rem 0;
     font-size: 0.8rem;
     color: #888;
     line-height: 1.4;
+    position: relative;
+    top: 0;
 }
 
 .info-panel {
@@ -184,9 +192,16 @@ main {
     color: #fff;
 }
 
-.badge.low    { background: #34a853; }
-.badge.medium { background: #fbbc04; color: #333; }
-.badge.high   { background: #ea4335; }
+.badge.low {
+    background: #34a853;
+}
+.badge.medium {
+    background: #fbbc04;
+    color: #333;
+}
+.badge.high {
+    background: #ea4335;
+}
 
 #unemploymentChart {
     margin-top: 0.5rem;
