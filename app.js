@@ -8,7 +8,7 @@ const map = L.map('map').setView([39.8283, -98.5795], 4);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
-    attribution: '© OpenStreetMap'
+    attribution: '© OpenStreetMap',
 }).addTo(map);
 
 // ===========================================
@@ -16,34 +16,49 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // ===========================================
 
 const stateData = {
-    'Florida':        { score: 65, income: 52000, home: 350000 },
-    'Texas':          { score: 72, income: 58000, home: 290000 },
-    'California':     { score: 28, income: 75000, home: 750000 },
-    'New York':       { score: 35, income: 68000, home: 550000 },
-    'Ohio':           { score: 78, income: 48000, home: 180000 },
-    'Georgia':        { score: 68, income: 54000, home: 310000 },
+    Florida: { score: 65, income: 52000, home: 350000 },
+    Texas: { score: 72, income: 58000, home: 290000 },
+    California: { score: 28, income: 75000, home: 750000 },
+    'New York': { score: 35, income: 68000, home: 550000 },
+    Ohio: { score: 78, income: 48000, home: 180000 },
+    Georgia: { score: 68, income: 54000, home: 310000 },
     'North Carolina': { score: 70, income: 51000, home: 280000 },
-    'Arizona':        { score: 55, income: 52000, home: 400000 },
-    'Washington':     { score: 42, income: 72000, home: 580000 },
-    'Colorado':       { score: 48, income: 68000, home: 520000 },
-    'Michigan':       { score: 74, income: 50000, home: 220000 },
-    'Pennsylvania':   { score: 62, income: 55000, home: 280000 },
-    'Illinois':       { score: 58, income: 60000, home: 320000 },
-    'Virginia':       { score: 52, income: 65000, home: 400000 },
-    'Nevada':         { score: 45, income: 54000, home: 420000 },
-    'Oregon':         { score: 40, income: 58000, home: 480000 },
-    'Tennessee':      { score: 71, income: 49000, home: 260000 },
-    'Indiana':        { score: 76, income: 47000, home: 190000 },
-    'Missouri':       { score: 75, income: 48000, home: 200000 },
-    'Alabama':        { score: 77, income: 44000, home: 170000 }
+    Arizona: { score: 55, income: 52000, home: 400000 },
+    Washington: { score: 42, income: 72000, home: 580000 },
+    Colorado: { score: 48, income: 68000, home: 520000 },
+    Michigan: { score: 74, income: 50000, home: 220000 },
+    Pennsylvania: { score: 62, income: 55000, home: 280000 },
+    Illinois: { score: 58, income: 60000, home: 320000 },
+    Virginia: { score: 52, income: 65000, home: 400000 },
+    Nevada: { score: 45, income: 54000, home: 420000 },
+    Oregon: { score: 40, income: 58000, home: 480000 },
+    Tennessee: { score: 71, income: 49000, home: 260000 },
+    Indiana: { score: 76, income: 47000, home: 190000 },
+    Missouri: { score: 75, income: 48000, home: 200000 },
+    Alabama: { score: 77, income: 44000, home: 170000 },
 };
 
 const stateNames = {
-    FL: 'Florida', TX: 'Texas', CA: 'California', NY: 'New York',
-    OH: 'Ohio', GA: 'Georgia', NC: 'North Carolina', AZ: 'Arizona',
-    WA: 'Washington', CO: 'Colorado', MI: 'Michigan', PA: 'Pennsylvania',
-    IL: 'Illinois', VA: 'Virginia', NV: 'Nevada', OR: 'Oregon',
-    TN: 'Tennessee', IN: 'Indiana', MO: 'Missouri', AL: 'Alabama',
+    FL: 'Florida',
+    TX: 'Texas',
+    CA: 'California',
+    NY: 'New York',
+    OH: 'Ohio',
+    GA: 'Georgia',
+    NC: 'North Carolina',
+    AZ: 'Arizona',
+    WA: 'Washington',
+    CO: 'Colorado',
+    MI: 'Michigan',
+    PA: 'Pennsylvania',
+    IL: 'Illinois',
+    VA: 'Virginia',
+    NV: 'Nevada',
+    OR: 'Oregon',
+    TN: 'Tennessee',
+    IN: 'Indiana',
+    MO: 'Missouri',
+    AL: 'Alabama',
 };
 
 // ===========================================
@@ -147,7 +162,7 @@ function stateStyle(feature) {
         weight: 1,
         opacity: 1,
         color: '#fff',
-        fillOpacity: 0.7
+        fillOpacity: 0.7,
     };
 }
 
@@ -188,7 +203,7 @@ function onEachFeature(feature, layer) {
             `<strong>${name}</strong><br>
              Score: ${getLetterGrade(data.score)}<br>
              Median Income: ${formatCurrency(data.income)}<br>
-             Annual Housing Cost: ${formatCurrency(data.home)}`
+             Annual Housing Cost: ${formatCurrency(data.home)}`,
         );
     } else {
         layer.bindPopup(`<strong>${name}</strong><br>No data available`);
@@ -215,9 +230,18 @@ let zipMarker = null;
 let zipBoundaryLayer = null;
 
 function clearZipHighlight() {
-    if (zipMarker) { map.removeLayer(zipMarker); zipMarker = null; }
-    if (zipBoundaryLayer) { map.removeLayer(zipBoundaryLayer); zipBoundaryLayer = null; }
-    if (decoloredState) { decoloredState.setStyle(stateStyle(decoloredState.feature)); decoloredState = null; }
+    if (zipMarker) {
+        map.removeLayer(zipMarker);
+        zipMarker = null;
+    }
+    if (zipBoundaryLayer) {
+        map.removeLayer(zipBoundaryLayer);
+        zipBoundaryLayer = null;
+    }
+    if (decoloredState) {
+        decoloredState.setStyle(stateStyle(decoloredState.feature));
+        decoloredState = null;
+    }
     clearSelectedState();
 }
 
@@ -249,56 +273,58 @@ function searchByZip(zip) {
         }),
         fetchZipBoundary(zip),
     ])
-    .then(async ([locationData, boundary]) => {
-        const place = locationData.places[0];
-        const lat = parseFloat(place.latitude);
-        const lng = parseFloat(place.longitude);
-        const city = place['place name'];
-        const stateAbbr = place['state abbreviation'];
-        const stateName = stateNames[stateAbbr];
+        .then(async ([locationData, boundary]) => {
+            const place = locationData.places[0];
+            const lat = parseFloat(place.latitude);
+            const lng = parseFloat(place.longitude);
+            const city = place['place name'];
+            const stateAbbr = place['state abbreviation'];
+            const stateName = stateNames[stateAbbr];
 
-        const income = await censusApi.getMedianIncomeByZip(zip);
-        const monthlyHousingCost = await censusApi.getMedianMonthlyHousingCostByZip(zip);
+            const income = await censusApi.getMedianIncomeByZip(zip);
+            const monthlyHousingCost = await censusApi.getMedianMonthlyHousingCostByZip(zip);
 
-        if (income === null || monthlyHousingCost === null) {
-            alert('No Census data available for ZIP ' + zip + '. Try a residential ZIP code.');
-            return;
-        }
+            if (income === null || monthlyHousingCost === null) {
+                alert('No Census data available for ZIP ' + zip + '. Try a residential ZIP code.');
+                return;
+            }
 
-        const annualCost = monthlyHousingCost * 12;
-        const score = Math.round(calculateAffordabilityScore(income, annualCost));
+            const annualCost = monthlyHousingCost * 12;
+            const score = Math.round(calculateAffordabilityScore(income, annualCost));
 
-        clearZipHighlight();
-        decolorState(stateName);
+            clearZipHighlight();
+            decolorState(stateName);
 
-        // Draw zip boundary
-        if (boundary) {
-            zipBoundaryLayer = L.geoJson(boundary, {
-                style: { color: '#0d47a1', weight: 4, fillColor: '#1a73e8', fillOpacity: 0.35 },
-            }).addTo(map);
-            zipBoundaryLayer.bringToFront();
-            map.fitBounds(zipBoundaryLayer.getBounds(), { padding: [20, 20] });
-        } else {
-            map.setView([lat, lng], 13);
-        }
+            // Draw zip boundary
+            if (boundary) {
+                zipBoundaryLayer = L.geoJson(boundary, {
+                    style: { color: '#0d47a1', weight: 4, fillColor: '#1a73e8', fillOpacity: 0.35 },
+                }).addTo(map);
+                zipBoundaryLayer.bringToFront();
+                map.fitBounds(zipBoundaryLayer.getBounds(), { padding: [20, 20] });
+            } else {
+                map.setView([lat, lng], 13);
+            }
 
-        // Marker
-        const markerPos = zipBoundaryLayer ? zipBoundaryLayer.getBounds().getCenter() : L.latLng(lat, lng);
-        zipMarker = L.marker(markerPos).addTo(map);
-        zipMarker.bindPopup(
-            `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
+            // Marker
+            const markerPos = zipBoundaryLayer ? zipBoundaryLayer.getBounds().getCenter() : L.latLng(lat, lng);
+            zipMarker = L.marker(markerPos).addTo(map);
+            zipMarker
+                .bindPopup(
+                    `<strong>${zip} - ${city}, ${stateAbbr}</strong><br>
              Score: ${getLetterGrade(score)}<br>
              Median Income: ${formatCurrency(income)}<br>
-             Annual Housing Cost: ${formatCurrency(annualCost)}`
-        ).openPopup();
+             Annual Housing Cost: ${formatCurrency(annualCost)}`,
+                )
+                .openPopup();
 
-        updateFooterStats(income, annualCost, score);
-        addToHistory({ zipOrState: zip, score });
-        showInfoPanel(zip, score, income, annualCost);
-    })
-    .catch(() => {
-        alert('Could not load data for that ZIP code. Please check it and try again.');
-    });
+            updateFooterStats(income, annualCost, score);
+            addToHistory({ zipOrState: zip, score });
+            showInfoPanel(zip, score, income, annualCost);
+        })
+        .catch(() => {
+            alert('Could not load data for that ZIP code. Please check it and try again.');
+        });
 }
 
 // ===========================================
@@ -362,23 +388,6 @@ function stateMatchesFilters(data) {
     return true;
 }
 
-function applyFilters() {
-    if (!geojsonLayer) return;
-    geojsonLayer.eachLayer((layer) => {
-        if (layer === decoloredState || layer === selectedState) return;
-        const data = stateData[layer.feature.properties.name];
-        if (stateMatchesFilters(data)) {
-            layer.setStyle(stateStyle(layer.feature));
-        } else {
-            layer.setStyle({ fillColor: '#ccc', fillOpacity: 0.4, weight: 1, color: '#fff' });
-        }
-    });
-}
-
-['income', 'price', 'risk', 'affordabilityScore'].forEach((id) => {
-    document.getElementById(id).addEventListener('change', applyFilters);
-});
-
 // ===========================================
 // 9. Search Button
 // ===========================================
@@ -410,16 +419,18 @@ function drawUnemploymentChart(trend) {
         type: 'line',
         data: {
             labels: trend.map((t) => String(t.year)),
-            datasets: [{
-                label: 'Unemployment Rate',
-                data: trend.map((t) => t.rate),
-                borderColor: '#1a73e8',
-                backgroundColor: 'rgba(26, 115, 232, 0.1)',
-                tension: 0.3,
-                fill: true,
-                pointRadius: 5,
-                pointHoverRadius: 7,
-            }],
+            datasets: [
+                {
+                    label: 'Unemployment Rate',
+                    data: trend.map((t) => t.rate),
+                    borderColor: '#1a73e8',
+                    backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                },
+            ],
         },
         options: {
             responsive: true,
@@ -427,7 +438,7 @@ function drawUnemploymentChart(trend) {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: (item) => item.raw !== null ? item.raw + '% unemployment' : 'No data',
+                        label: (item) => (item.raw !== null ? item.raw + '% unemployment' : 'No data'),
                     },
                 },
             },
@@ -457,7 +468,7 @@ async function showInfoPanel(zip, score, income, home) {
         </div>
         <div class="info-row">
             <span>Affordability Score</span>
-            <span>${score}/100</span>
+            <span>${getLetterGrade(score)}</span>
         </div>
         <div class="info-row">
             <span>Median Income</span>
@@ -484,23 +495,13 @@ async function showInfoPanel(zip, score, income, home) {
     `;
 
     // Fetch the rest in parallel
-    const [unemployment, supply, renters, trend] = await Promise.all([
-        censusApi.getUnemploymentDataByZip(zip),
-        censusApi.getSupplyAndDemandDataByZip(zip),
-        censusApi.getInvestorActivityDataByZip(zip),
-        censusApi.getUnemploymentTrendByZip(zip),
-    ]);
+    const [unemployment, supply, renters, trend] = await Promise.all([censusApi.getUnemploymentDataByZip(zip), censusApi.getSupplyAndDemandDataByZip(zip), censusApi.getInvestorActivityDataByZip(zip), censusApi.getUnemploymentTrendByZip(zip)]);
 
-    document.getElementById('infoUnemployment').textContent =
-        unemployment !== null ? unemployment + '%' : 'N/A';
+    document.getElementById('infoUnemployment').textContent = unemployment !== null ? unemployment + '%' : 'N/A';
 
-    document.getElementById('infoBuyersGrade').textContent =
-        supply.buyersMarketScore !== null
-            ? supply.buyersMarketScore + ' (' + supply.homeownershipVacancyRate + '% vacancy)'
-            : 'N/A';
+    document.getElementById('infoBuyersGrade').textContent = supply.buyersMarketScore !== null ? supply.buyersMarketScore + ' (' + supply.homeownershipVacancyRate + '% vacancy)' : 'N/A';
 
-    document.getElementById('infoRenterActivity').textContent =
-        renters !== null ? renters + '% renters' : 'N/A';
+    document.getElementById('infoRenterActivity').textContent = renters !== null ? renters + '% renters' : 'N/A';
 
     drawUnemploymentChart(trend);
 }
@@ -542,18 +543,22 @@ async function searchByBudget(budget) {
             } catch {
                 return { zip: entry.zip, housingCost: entry.housingCost, city: 'Unknown', state: '' };
             }
-        })
+        }),
     );
 
     details.innerHTML = `
         <p class="budget-heading">Top areas under ${formatCurrency(budget)}/mo</p>
         <ul class="budget-results">
-            ${enriched.map((e) => `
+            ${enriched
+                .map(
+                    (e) => `
                 <li class="budget-item" data-zip="${e.zip}">
                     <span class="budget-location">${e.city}, ${e.state} <small>${e.zip}</small></span>
                     <span class="budget-cost">${formatCurrency(e.housingCost)}/mo</span>
                 </li>
-            `).join('')}
+            `,
+                )
+                .join('')}
         </ul>
     `;
 
