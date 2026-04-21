@@ -1,5 +1,5 @@
 {
     "scripts": {
-        "build": "mkdir -p public/api && cp index.html public/index.html && cp app.js public/app.js && cp styles.css public/styles.css && cp -r api/. public/api/"
+        "build-win": "copy /Y index.html public\\index.html >nul && copy /Y app.js public\\app.js >nul && copy /Y styles.css public\\styles.css >nul && copy /Y api\\censusData.mjs public\\api\\censusData.mjs >nul"
     }
 }
