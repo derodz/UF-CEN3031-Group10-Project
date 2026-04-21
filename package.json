@@ -1,5 +1,6 @@
 {
     "scripts": {
-        "build-win": "copy /Y index.html public\\index.html >nul && copy /Y app.js public\\app.js >nul && copy /Y styles.css public\\styles.css >nul && copy /Y api\\censusData.mjs public\\api\\censusData.mjs >nul"
+        "build-win": "copy /Y index.html public\\index.html >nul && copy /Y app.js public\\app.js >nul && copy /Y styles.css public\\styles.css >nul && copy /Y api\\censusData.mjs public\\api\\censusData.mjs >nul",
+        "deploy": "npm run build-win && firebase deploy --only hosting"
     }
 }
